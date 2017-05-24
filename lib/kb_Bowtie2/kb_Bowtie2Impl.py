@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
+import os
+from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 #END_HEADER
 
 
@@ -19,8 +21,8 @@ class kb_Bowtie2:
     # the latter method is running.
     ######################################### noqa
     VERSION = "0.0.1"
-    GIT_URL = ""
-    GIT_COMMIT_HASH = ""
+    GIT_URL = "git@github.com:kbaseapps/kb_Bowtie2.git"
+    GIT_COMMIT_HASH = "8816cf5959dc4b8bbd1788c50b4787538e2e36b9"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -29,6 +31,8 @@ class kb_Bowtie2:
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
+        self.scratch_dir = os.path.abspath(config['scratch'])
+        self.callback_url = os.environ['SDK_CALLBACK_URL']
         #END_CONSTRUCTOR
         pass
 
@@ -64,6 +68,15 @@ class kb_Bowtie2:
         """
         # ctx is the context object
         #BEGIN run_bowtie2_cli
+
+        if 'command' not in params:
+            raise ValueError('required parameter field "command" was missing.')
+        if 'options' not in params:
+            raise ValueError('required parameter field "options" was missing.')
+
+        bowtie2 = Bowtie2Runner(self.scratch_dir)
+        bowtie2.run(params['command'], params['options'])
+
         #END run_bowtie2_cli
         pass
     def status(self, ctx):

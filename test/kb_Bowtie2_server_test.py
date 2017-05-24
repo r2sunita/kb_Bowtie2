@@ -75,6 +75,14 @@ class kb_Bowtie2Test(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
+
+    def test_bowtie2_installation(self):
+        params = {'command': 'bowtie2', 'options': ['--help']}
+        self.getImpl().run_bowtie2_cli(self.getContext(), params)
+
+
+
+
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
     def test_your_method(self):
         # Prepare test objects in workspace if needed using
