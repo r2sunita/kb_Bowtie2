@@ -163,18 +163,37 @@ public class KbBowtie2Client {
     }
 
     /**
-     * <p>Original spec-file function name: align_reads_to_assembly</p>
+     * <p>Original spec-file function name: align_reads_to_assembly_app</p>
      * <pre>
      * </pre>
      * @param   params   instance of type {@link us.kbase.kbbowtie2.AlignReadsParams AlignReadsParams}
+     * @return   instance of type {@link us.kbase.kbbowtie2.AlignReadsResult AlignReadsResult}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public void alignReadsToAssembly(AlignReadsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public AlignReadsResult alignReadsToAssemblyApp(AlignReadsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
-        TypeReference<Object> retType = new TypeReference<Object>() {};
-        caller.jsonrpcCall("kb_Bowtie2.align_reads_to_assembly", args, retType, false, true, jsonRpcContext, this.serviceVersion);
+        TypeReference<List<AlignReadsResult>> retType = new TypeReference<List<AlignReadsResult>>() {};
+        List<AlignReadsResult> res = caller.jsonrpcCall("kb_Bowtie2.align_reads_to_assembly_app", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: get_bowtie2_index</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbbowtie2.GetBowtie2Index GetBowtie2Index}
+     * @return   parameter "result" of type {@link us.kbase.kbbowtie2.GetBowtie2IndexResult GetBowtie2IndexResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public GetBowtie2IndexResult getBowtie2Index(GetBowtie2Index params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<GetBowtie2IndexResult>> retType = new TypeReference<List<GetBowtie2IndexResult>>() {};
+        List<GetBowtie2IndexResult> res = caller.jsonrpcCall("kb_Bowtie2.get_bowtie2_index", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
     }
 
     /**

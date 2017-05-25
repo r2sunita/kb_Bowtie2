@@ -33,7 +33,7 @@ class kb_Bowtie2(object):
             trust_all_ssl_certificates=trust_all_ssl_certificates,
             auth_svc=auth_svc)
 
-    def align_reads_to_assembly(self, params, context=None):
+    def align_reads_to_assembly_app(self, params, context=None):
         """
         :param params: instance of type "AlignReadsParams" -> structure:
            parameter "reads_ref" of String, parameter "assembly_ref" of
@@ -47,9 +47,28 @@ class kb_Bowtie2(object):
            parameter "very-fast-local" of String, parameter
            "very-sensitive-local" of String, parameter "fast-local" of
            String, parameter "fast-sensitive" of String
+        :returns: instance of type "AlignReadsResult" -> structure: parameter
+           "reads_alignment_ref" of String, parameter "report_name" of
+           String, parameter "report_ref" of String
         """
         return self._client.call_method(
-            'kb_Bowtie2.align_reads_to_assembly',
+            'kb_Bowtie2.align_reads_to_assembly_app',
+            [params], self._service_ver, context)
+
+    def get_bowtie2_index(self, params, context=None):
+        """
+        :param params: instance of type "GetBowtie2Index" (Provide either a
+           genome_ref or assembly_ref to get a Bowtie2 index for. output_dir
+           is optional, if provided the index files will be saved in that
+           directory.  If not, a directory will be generated for you and
+           returned by this function.) -> structure: parameter "genome_ref"
+           of String, parameter "assembly_ref" of String, parameter
+           "output_dir" of String
+        :returns: instance of type "GetBowtie2IndexResult" -> structure:
+           parameter "output_dir" of String
+        """
+        return self._client.call_method(
+            'kb_Bowtie2.get_bowtie2_index',
             [params], self._service_ver, context)
 
     def run_bowtie2_cli(self, params, context=None):

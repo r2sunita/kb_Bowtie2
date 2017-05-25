@@ -22,7 +22,7 @@ class kb_Bowtie2:
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "git@github.com:kbaseapps/kb_Bowtie2.git"
-    GIT_COMMIT_HASH = "8816cf5959dc4b8bbd1788c50b4787538e2e36b9"
+    GIT_COMMIT_HASH = "73a42111d7973994d96b4f092b91a31c39742b3a"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -37,7 +37,7 @@ class kb_Bowtie2:
         pass
 
 
-    def align_reads_to_assembly(self, ctx, params):
+    def align_reads_to_assembly_app(self, ctx, params):
         """
         :param params: instance of type "AlignReadsParams" -> structure:
            parameter "reads_ref" of String, parameter "assembly_ref" of
@@ -51,11 +51,45 @@ class kb_Bowtie2:
            parameter "very-fast-local" of String, parameter
            "very-sensitive-local" of String, parameter "fast-local" of
            String, parameter "fast-sensitive" of String
+        :returns: instance of type "AlignReadsResult" -> structure: parameter
+           "reads_alignment_ref" of String, parameter "report_name" of
+           String, parameter "report_ref" of String
         """
         # ctx is the context object
-        #BEGIN align_reads_to_assembly
-        #END align_reads_to_assembly
-        pass
+        # return variables are: returnVal
+        #BEGIN align_reads_to_assembly_app
+        #END align_reads_to_assembly_app
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method align_reads_to_assembly_app return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def get_bowtie2_index(self, ctx, params):
+        """
+        :param params: instance of type "GetBowtie2Index" (Provide either a
+           genome_ref or assembly_ref to get a Bowtie2 index for. output_dir
+           is optional, if provided the index files will be saved in that
+           directory.  If not, a directory will be generated for you and
+           returned by this function.) -> structure: parameter "genome_ref"
+           of String, parameter "assembly_ref" of String, parameter
+           "output_dir" of String
+        :returns: instance of type "GetBowtie2IndexResult" -> structure:
+           parameter "output_dir" of String
+        """
+        # ctx is the context object
+        # return variables are: result
+        #BEGIN get_bowtie2_index
+        #END get_bowtie2_index
+
+        # At some point might do deeper type checking...
+        if not isinstance(result, dict):
+            raise ValueError('Method get_bowtie2_index return value ' +
+                             'result is not type dict as required.')
+        # return the results
+        return [result]
 
     def run_bowtie2_cli(self, ctx, params):
         """

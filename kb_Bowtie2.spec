@@ -34,9 +34,37 @@ module kb_Bowtie2 {
         string fast-sensitive;
     } AlignReadsParams;
 
-    funcdef align_reads_to_assembly(AlignReadsParams params)
-        returns () authentication required;
 
+    typedef structure {
+        string reads_alignment_ref;
+
+        string report_name;
+        string report_ref;
+    } AlignReadsResult;
+
+
+    funcdef align_reads_to_assembly_app(AlignReadsParams params)
+        returns (AlignReadsResult) authentication required;
+
+
+
+    /* Provide either a genome_ref or assembly_ref to get a Bowtie2 index for.
+       output_dir is optional, if provided the index files will be saved in that
+       directory.  If not, a directory will be generated for you and returned
+       by this function.
+    */
+    typedef structure {
+        string genome_ref;
+        string assembly_ref;
+        string output_dir;
+    } GetBowtie2Index;
+
+    typedef structure {
+        string output_dir;
+    } GetBowtie2IndexResult;
+
+    funcdef get_bowtie2_index(GetBowtie2Index params)
+        returns(GetBowtie2IndexResult result) authentication required;
 
     /*
         supported commands:

@@ -108,9 +108,9 @@ sub new
 
 
 
-=head2 align_reads_to_assembly
+=head2 align_reads_to_assembly_app
 
-  $obj->align_reads_to_assembly($params)
+  $return = $obj->align_reads_to_assembly_app($params)
 
 =over 4
 
@@ -120,6 +120,7 @@ sub new
 
 <pre>
 $params is a kb_Bowtie2.AlignReadsParams
+$return is a kb_Bowtie2.AlignReadsResult
 AlignReadsParams is a reference to a hash where the following keys are defined:
 	reads_ref has a value which is a string
 	assembly_ref has a value which is a string
@@ -140,6 +141,10 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	very-sensitive-local has a value which is a string
 	fast-local has a value which is a string
 	fast-sensitive has a value which is a string
+AlignReadsResult is a reference to a hash where the following keys are defined:
+	reads_alignment_ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -148,6 +153,7 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 =begin text
 
 $params is a kb_Bowtie2.AlignReadsParams
+$return is a kb_Bowtie2.AlignReadsResult
 AlignReadsParams is a reference to a hash where the following keys are defined:
 	reads_ref has a value which is a string
 	assembly_ref has a value which is a string
@@ -168,6 +174,10 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	very-sensitive-local has a value which is a string
 	fast-local has a value which is a string
 	fast-sensitive has a value which is a string
+AlignReadsResult is a reference to a hash where the following keys are defined:
+	reads_alignment_ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
@@ -180,7 +190,7 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 
 =cut
 
- sub align_reads_to_assembly
+ sub align_reads_to_assembly_app
 {
     my($self, @args) = @_;
 
@@ -189,7 +199,7 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
     if ((my $n = @args) != 1)
     {
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function align_reads_to_assembly (received $n, expecting 1)");
+							       "Invalid argument count for function align_reads_to_assembly_app (received $n, expecting 1)");
     }
     {
 	my($params) = @args;
@@ -197,31 +207,125 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	my @_bad_arguments;
         (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
         if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to align_reads_to_assembly:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    my $msg = "Invalid arguments passed to align_reads_to_assembly_app:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'align_reads_to_assembly');
+								   method_name => 'align_reads_to_assembly_app');
 	}
     }
 
     my $url = $self->{url};
     my $result = $self->{client}->call($url, $self->{headers}, {
-	    method => "kb_Bowtie2.align_reads_to_assembly",
+	    method => "kb_Bowtie2.align_reads_to_assembly_app",
 	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
 					       code => $result->content->{error}->{code},
-					       method_name => 'align_reads_to_assembly',
+					       method_name => 'align_reads_to_assembly_app',
 					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
-	    return;
+	    return wantarray ? @{$result->result} : $result->result->[0];
 	}
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method align_reads_to_assembly",
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method align_reads_to_assembly_app",
 					    status_line => $self->{client}->status_line,
-					    method_name => 'align_reads_to_assembly',
+					    method_name => 'align_reads_to_assembly_app',
+				       );
+    }
+}
+ 
+
+
+=head2 get_bowtie2_index
+
+  $result = $obj->get_bowtie2_index($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_Bowtie2.GetBowtie2Index
+$result is a kb_Bowtie2.GetBowtie2IndexResult
+GetBowtie2Index is a reference to a hash where the following keys are defined:
+	genome_ref has a value which is a string
+	assembly_ref has a value which is a string
+	output_dir has a value which is a string
+GetBowtie2IndexResult is a reference to a hash where the following keys are defined:
+	output_dir has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_Bowtie2.GetBowtie2Index
+$result is a kb_Bowtie2.GetBowtie2IndexResult
+GetBowtie2Index is a reference to a hash where the following keys are defined:
+	genome_ref has a value which is a string
+	assembly_ref has a value which is a string
+	output_dir has a value which is a string
+GetBowtie2IndexResult is a reference to a hash where the following keys are defined:
+	output_dir has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub get_bowtie2_index
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_bowtie2_index (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_bowtie2_index:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_bowtie2_index');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_Bowtie2.get_bowtie2_index",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'get_bowtie2_index',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_bowtie2_index",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_bowtie2_index',
 				       );
     }
 }
@@ -459,6 +563,112 @@ very-fast-local has a value which is a string
 very-sensitive-local has a value which is a string
 fast-local has a value which is a string
 fast-sensitive has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 AlignReadsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+reads_alignment_ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+reads_alignment_ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 GetBowtie2Index
+
+=over 4
+
+
+
+=item Description
+
+Provide either a genome_ref or assembly_ref to get a Bowtie2 index for.
+output_dir is optional, if provided the index files will be saved in that
+directory.  If not, a directory will be generated for you and returned
+by this function.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_ref has a value which is a string
+assembly_ref has a value which is a string
+output_dir has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_ref has a value which is a string
+assembly_ref has a value which is a string
+output_dir has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 GetBowtie2IndexResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+output_dir has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+output_dir has a value which is a string
 
 
 =end text
