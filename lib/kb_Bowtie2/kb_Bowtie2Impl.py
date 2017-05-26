@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
 import os
+from pprint import pprint
+from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 #END_HEADER
 
@@ -32,6 +34,8 @@ class kb_Bowtie2:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
         self.scratch_dir = os.path.abspath(config['scratch'])
+        self.workspace_url = config['workspace-url']
+        self.srv_wiz_url = config['srv-wiz-url']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         #END_CONSTRUCTOR
         pass
@@ -82,6 +86,9 @@ class kb_Bowtie2:
         # ctx is the context object
         # return variables are: result
         #BEGIN get_bowtie2_index
+        bowtie2IndexBuilder = Bowtie2IndexBuilder(self.scratch_dir, self.workspace_url,
+                                                  self.callback_url, self.srv_wiz_url)
+        result = bowtie2IndexBuilder.get_index(params)
         #END get_bowtie2_index
 
         # At some point might do deeper type checking...

@@ -4,6 +4,7 @@ import os  # noqa: F401
 import json  # noqa: F401
 import time
 import requests
+import shutil
 
 from os import environ
 try:
@@ -18,6 +19,7 @@ from kb_Bowtie2.kb_Bowtie2Impl import kb_Bowtie2
 from kb_Bowtie2.kb_Bowtie2Server import MethodContext
 from kb_Bowtie2.authclient import KBaseAuth as _KBaseAuth
 
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 
 class kb_Bowtie2Test(unittest.TestCase):
 
@@ -81,17 +83,15 @@ class kb_Bowtie2Test(unittest.TestCase):
         self.getImpl().run_bowtie2_cli(self.getContext(), params)
 
 
+    def test_build_bowtie2_index(self):
+        fasta_path = os.path.join(self.scratch, 'test.fna')
+        shutil.copy(os.path.join('data', 'test.fna'), fasta_path)
+        au = AssemblyUtil(self.callback_url)
+        assembly_ref = au.save_assembly_from_fasta({'file': {'path': fasta_path},
+                                                             'workspace_name': self.getWsName(),
+                                                             'assembly_name': 'test_assembly'
+                                                             })
 
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})
+        pprint(res)
 
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
-        pass
