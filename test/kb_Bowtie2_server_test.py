@@ -3,7 +3,6 @@ import unittest
 import os  # noqa: F401
 import json  # noqa: F401
 import time
-import requests
 import shutil
 
 from os import environ
@@ -20,6 +19,8 @@ from kb_Bowtie2.kb_Bowtie2Server import MethodContext
 from kb_Bowtie2.authclient import KBaseAuth as _KBaseAuth
 
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+
 
 class kb_Bowtie2Test(unittest.TestCase):
 
@@ -71,6 +72,35 @@ class kb_Bowtie2Test(unittest.TestCase):
         self.__class__.wsName = wsName
         return wsName
 
+
+    def loadAssembly(self):
+        if hasattr(self.__class__, 'assembly_ref'):
+            return self.__class__.assembly_ref
+        fasta_path = os.path.join(self.scratch, 'test.fna')
+        shutil.copy(os.path.join('data', 'test.fna'), fasta_path)
+        au = AssemblyUtil(self.callback_url)
+        assembly_ref = au.save_assembly_from_fasta({'file': {'path': fasta_path},
+                                                    'workspace_name': self.getWsName(),
+                                                    'assembly_name': 'test_assembly'
+                                                    })
+        self.__class__.assembly_ref = assembly_ref
+        return assembly_ref
+
+
+    def loadGenome(self):
+        if hasattr(self.__class__, 'genome_ref'):
+            return self.__class__.genome_ref
+        genbank_file_path = os.path.join(self.scratch, 'minimal.gbff')
+        shutil.copy(os.path.join('data', 'minimal.gbff'), genbank_file_path)
+        gfu = GenomeFileUtil(self.callback_url)
+        genome_ref = gfu.genbank_to_genome({'file': {'path': genbank_file_path},
+                                            'workspace_name': self.getWsName(),
+                                            'genome_name': 'test_genome'
+                                            })['genome_ref']
+        self.__class__.genome_ref = genome_ref
+        return genome_ref
+
+
     def getImpl(self):
         return self.__class__.serviceImpl
 
@@ -84,14 +114,45 @@ class kb_Bowtie2Test(unittest.TestCase):
 
 
     def test_build_bowtie2_index(self):
-        fasta_path = os.path.join(self.scratch, 'test.fna')
-        shutil.copy(os.path.join('data', 'test.fna'), fasta_path)
-        au = AssemblyUtil(self.callback_url)
-        assembly_ref = au.save_assembly_from_fasta({'file': {'path': fasta_path},
-                                                             'workspace_name': self.getWsName(),
-                                                             'assembly_name': 'test_assembly'
-                                                             })
 
-        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})
+        # test build directly from an assembly, forget to add ws_for_cache so object will not be cached
+        assembly_ref = self.loadAssembly()
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})[0]
+        self.assertIn('output_dir', res)
+        self.assertIn('from_cache', res)
+        self.assertEquals(res['from_cache'], 0)
+        self.assertIn('pushed_to_cache', res)
+        self.assertEquals(res['pushed_to_cache'], 0)
+        pprint(res)
+
+        # do it again, and set ws_for_cache
+        #assembly_ref = self.loadAssembly()
+        #res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref,
+        #                                                           'ws_for_cache': self.getWsName()})[0]
+        #self.assertIn('output_dir', res)
+        #self.assertIn('from_cache', res)
+        #self.assertEquals(res['from_cache'], 0)
+        #self.assertIn('pushed_to_cache', res)
+        #self.assertEquals(res['pushed_to_cache'], 1)
+        #pprint(res)
+
+        # do it again, should retrieve from cache
+        #assembly_ref = self.loadAssembly()
+        #res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})[0]
+        #self.assertIn('output_dir', res)
+        #self.assertIn('from_cache', res)
+        #self.assertEquals(res['from_cache'], 1)
+        #self.assertIn('pushed_to_cache', res)
+        #self.assertEquals(res['pushed_to_cache'], 0)
+        #pprint(res)
+
+        # finally, try it with a genome_ref instead
+        genome_ref = self.loadGenome()
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'genome_ref': genome_ref})[0]
+        self.assertIn('output_dir', res)
+        self.assertIn('from_cache', res)
+        self.assertEquals(res['from_cache'], 0)
+        self.assertIn('pushed_to_cache', res)
+        self.assertEquals(res['pushed_to_cache'], 0)
         pprint(res)
 

@@ -4,6 +4,10 @@ A KBase module: kb_Bowtie2
 
 module kb_Bowtie2 {
     
+    /* A boolean - 0 for false, 1 for true.
+        @range (0, 1)
+    */
+    typedef int boolean;
 
     /*
     */
@@ -51,16 +55,34 @@ module kb_Bowtie2 {
     /* Provide either a genome_ref or assembly_ref to get a Bowtie2 index for.
        output_dir is optional, if provided the index files will be saved in that
        directory.  If not, a directory will be generated for you and returned
-       by this function.
+       by this function.  If specifying the output_dir, the directory must not
+       exist yet (to ensure only the index files are added there).
+        
+       Currently, Bowtie2 indexes are cached to a WS object.  If that object does
+       not exist, then calling this function can create a new object.  To create
+       the cache, you must specify the ws name or ID in 'ws_for_cache' in which
+       to create the cached index.  If this field is not set, the result will
+       not be cached.  This parameter will eventually be deprecated once the
+       big file cache service is implemented.
     */
     typedef structure {
         string genome_ref;
         string assembly_ref;
         string output_dir;
+
+        string ws_for_cache;
     } GetBowtie2Index;
 
+    /*
+        output_dir - the folder containing the index files
+        from_cache - 0 if the index was built fresh, 1 if it was found in the cache
+        pushed_to_cache - if the index was rebuilt and successfully added to the
+                          cache, this will be set to 1; otherwise set to 0
+    */
     typedef structure {
         string output_dir;
+        boolean from_cache;
+        boolean pushed_to_cache;
     } GetBowtie2IndexResult;
 
     funcdef get_bowtie2_index(GetBowtie2Index params)
