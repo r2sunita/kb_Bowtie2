@@ -113,7 +113,7 @@ class kb_Bowtie2Test(unittest.TestCase):
         self.getImpl().run_bowtie2_cli(self.getContext(), params)
 
 
-    def test_build_bowtie2_index(self):
+    def test_build_bowtie2_index_from_assembly(self):
 
         # test build directly from an assembly, forget to add ws_for_cache so object will not be cached
         assembly_ref = self.loadAssembly()
@@ -126,25 +126,28 @@ class kb_Bowtie2Test(unittest.TestCase):
         pprint(res)
 
         # do it again, and set ws_for_cache
-        #assembly_ref = self.loadAssembly()
-        #res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref,
-        #                                                           'ws_for_cache': self.getWsName()})[0]
-        #self.assertIn('output_dir', res)
-        #self.assertIn('from_cache', res)
-        #self.assertEquals(res['from_cache'], 0)
-        #self.assertIn('pushed_to_cache', res)
-        #self.assertEquals(res['pushed_to_cache'], 1)
-        #pprint(res)
+        assembly_ref = self.loadAssembly()
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref,
+                                                                   'ws_for_cache': self.getWsName()})[0]
+        self.assertIn('output_dir', res)
+        self.assertIn('from_cache', res)
+        self.assertEquals(res['from_cache'], 0)
+        self.assertIn('pushed_to_cache', res)
+        self.assertEquals(res['pushed_to_cache'], 1)
+        pprint(res)
 
         # do it again, should retrieve from cache
-        #assembly_ref = self.loadAssembly()
-        #res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})[0]
-        #self.assertIn('output_dir', res)
-        #self.assertIn('from_cache', res)
-        #self.assertEquals(res['from_cache'], 1)
-        #self.assertIn('pushed_to_cache', res)
-        #self.assertEquals(res['pushed_to_cache'], 0)
-        #pprint(res)
+        assembly_ref = self.loadAssembly()
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})[0]
+        self.assertIn('output_dir', res)
+        self.assertIn('from_cache', res)
+        self.assertEquals(res['from_cache'], 1)
+        self.assertIn('pushed_to_cache', res)
+        self.assertEquals(res['pushed_to_cache'], 0)
+        pprint(res)
+
+
+    def test_build_bowtie2_index_from_genome(self):
 
         # finally, try it with a genome_ref instead
         genome_ref = self.loadGenome()
@@ -155,4 +158,3 @@ class kb_Bowtie2Test(unittest.TestCase):
         self.assertIn('pushed_to_cache', res)
         self.assertEquals(res['pushed_to_cache'], 0)
         pprint(res)
-

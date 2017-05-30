@@ -86,8 +86,11 @@ class kb_Bowtie2:
         # ctx is the context object
         # return variables are: result
         #BEGIN get_bowtie2_index
+        print('Running get_bowtie2_index() with params=')
+        pprint(params)
         bowtie2IndexBuilder = Bowtie2IndexBuilder(self.scratch_dir, self.workspace_url,
-                                                  self.callback_url, self.srv_wiz_url)
+                                                  self.callback_url, self.srv_wiz_url,
+                                                  ctx.provenance())
         result = bowtie2IndexBuilder.get_index(params)
         #END get_bowtie2_index
 
@@ -109,6 +112,8 @@ class kb_Bowtie2:
         """
         # ctx is the context object
         #BEGIN run_bowtie2_cli
+        print('Running run_bowtie2_cli() with params=')
+        pprint(params)
 
         if 'command' not in params:
             raise ValueError('required parameter field "command" was missing.')

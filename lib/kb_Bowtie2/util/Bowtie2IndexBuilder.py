@@ -2,22 +2,26 @@ from pprint import pprint
 
 import os
 import time
+import traceback
 
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from Workspace.WorkspaceClient import Workspace
 from GenomeAnnotationAPI.GenomeAnnotationAPIServiceClient import GenomeAnnotationAPI
+from DataFileUtil.DataFileUtilClient import DataFileUtil
 
 
 class Bowtie2IndexBuilder(object):
 
-    def __init__(self, scratch_dir, ws_url, callback_url, service_wizard_url):
+    def __init__(self, scratch_dir, ws_url, callback_url, service_wizard_url, provenance):
         self.scratch_dir = scratch_dir
         self.ws_url = ws_url
+        self.ws = Workspace(self.ws_url)
         self.callback_url = callback_url
         self.service_wizard_url = service_wizard_url
         self.bowtie2 = Bowtie2Runner(self.scratch_dir)
+        self.provenance = provenance
 
 
     def get_index(self, params):
@@ -28,7 +32,7 @@ class Bowtie2IndexBuilder(object):
         assembly_info = self._get_assembly_info(validated_params['ref'])
 
         # check the cache (keyed off of assembly_info)
-        index_info = self._get_cached_index(assembly_info)
+        index_info = self._get_cached_index(assembly_info, validated_params)
         if index_info:
             index_info['from_cache'] = 1
             index_info['pushed_to_cache'] = 0
@@ -75,8 +79,7 @@ class Bowtie2IndexBuilder(object):
 
     def _get_assembly_info(self, ref):
         ''' given a ref to an assembly or genome, figure out the assembly and return its info '''
-        ws = Workspace(self.ws_url)
-        info = ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0]
+        info = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0]
         obj_type = info[2]
         if obj_type.startswith('KBaseGenomeAnnotations.Assembly') or obj_type.startswith('KBaseGenomes.ContigSet'):
             return {'info': info, 'ref': ref}
@@ -87,28 +90,98 @@ class Bowtie2IndexBuilder(object):
             assembly_ref = ga.get_assembly({'ref': ref})
             # using the path ensures we can access the assembly even if we don't have direct access
             ref_path = ref + ';' + assembly_ref
-            info = ws.get_object_info3({'objects': [{'ref': ref_path}]})['infos'][0]
+            info = self.ws.get_object_info3({'objects': [{'ref': ref_path}]})['infos'][0]
             return {'info': info, 'ref': ref_path}
 
         raise ValueError('Input object was not of type: Assembly, ContigSet or Genome.  Cannot get Bowtie2 Index.')
 
 
 
-    def _get_cached_index(self, assembly_info):
+    def _get_cached_index(self, assembly_info, validated_params):
+
+        try:
+            # note: list_reference_objects does not yet support reference paths, so we need to call
+            # with the direct reference.  So we won't get a cache hit if you don't have direct access
+            # to the assembly object right now (although you can still always build the assembly object)
+            # Once this call supports paths, this should be changed to set ref = assembly_info['ref']
+            info = assembly_info['info']
+            ref = str(info[6]) + '/' + str(info[0]) + '/' + str(info[4])
+            objs = self.ws.list_referencing_objects([{'ref': ref}])[0]
+
+            # iterate through each of the objects that reference the assembly
+            bowtie2_indexes = []
+            for o in objs:
+                if o[2].startswith('KBaseRNASeq.Bowtie2IndexV2'):
+                    bowtie2_indexes.append(o)
+
+            # Nothing refs this assembly, so cache miss
+            if len(bowtie2_indexes) == 0:
+                return False
+
+            # if there is more than one hit, get the most recent one
+            # (obj_info[3] is the save_date timestamp (eg 2017-05-30T22:56:49+0000), so we can sort on that)
+            bowtie2_indexes.sort(key=lambda x: x[3])
+            bowtie2_index_info = bowtie2_indexes[-1]
+            index_ref = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])
+
+            # get the object data
+            index_obj_data = self.ws.get_objects2({'objects': [{'ref': index_ref}]})['data'][0]['data']
+
+            # download the handle object
+            dfu = DataFileUtil(self.callback_url)
+            local_files = dfu.shock_to_file({'file_path': validated_params['output_dir'],
+                                             'handle_id': index_obj_data['handle']['hid'],
+                                             'unpack': 'unpack'})
+            print('Cache hit: ')
+            pprint(index_obj_data)
+            return {'output_dir': local_files['file_path']}
+
+
+        except Exception:
+            # if we fail in saving the cached object, don't worry
+            print('WARNING: exception encountered when trying to lookup in cache:')
+            print(traceback.format_exc())
+            print('END WARNING: exception encountered when trying to lookup in cache.')
+
 
         return None
 
-    def _put_cached_index(self, assembly_info, output_folder, ws_for_cache):
+    def _put_cached_index(self, assembly_info, output_dir, ws_for_cache):
 
         if not ws_for_cache:
-            print('WARNING: bowtie2 index cannot be cached becase "ws_for_cache" field not set')
+            print('WARNING: bowtie2 index cannot be cached because "ws_for_cache" field not set')
             return False
 
+        try:
+            dfu = DataFileUtil(self.callback_url)
+            result = dfu.file_to_shock({'file_path': output_dir,
+                                        'make_handle': 1,
+                                        'pack': 'targz'})
 
+            bowtie2_index = {'handle': result['handle'], 'size': result['size'], 'assembly_ref': assembly_info['ref']}
 
-        # zip up the folder and save to shock
-        # TODO: contact the file caching service
-        # right now: create the Bowtie2 index file and save to the WS
+            ws = Workspace(self.ws_url)
+            save_params = {'objects': [{'hidden': 1,
+                                        'provenance': self.provenance,
+                                        'name': os.path.basename(output_dir),
+                                        'data': bowtie2_index,
+                                        'type': 'KBaseRNASeq.Bowtie2IndexV2'
+                                        }]
+                           }
+            if ws_for_cache.strip().isdigit():
+                save_params['id'] = int(ws_for_cache)
+            else:
+                save_params['workspace'] = ws_for_cache.strip()
+            save_result = ws.save_objects(save_params)
+            print('Bowtie2IndexV2 cached to: ')
+            pprint(save_result[0])
+            return True
+
+        except Exception:
+            # if we fail in saving the cached object, don't worry
+            print('WARNING: exception encountered when trying to cache the index files:')
+            print(traceback.format_exc())
+            print('END WARNING: exception encountered when trying to cache the index files')
 
         return False
 
