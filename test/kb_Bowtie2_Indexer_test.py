@@ -22,7 +22,7 @@ from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 
 
-class kb_Bowtie2Test(unittest.TestCase):
+class kb_Bowtie2IndexerTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
