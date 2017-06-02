@@ -337,6 +337,10 @@ class Application(object):
                              name='kb_Bowtie2.align_reads_to_assembly_app',
                              types=[dict])
         self.method_authentication['kb_Bowtie2.align_reads_to_assembly_app'] = 'required'  # noqa
+        self.rpc_service.add(impl_kb_Bowtie2.align_one_reads_to_assembly,
+                             name='kb_Bowtie2.align_one_reads_to_assembly',
+                             types=[])
+        self.method_authentication['kb_Bowtie2.align_one_reads_to_assembly'] = 'required'  # noqa
         self.rpc_service.add(impl_kb_Bowtie2.get_bowtie2_index,
                              name='kb_Bowtie2.get_bowtie2_index',
                              types=[dict])

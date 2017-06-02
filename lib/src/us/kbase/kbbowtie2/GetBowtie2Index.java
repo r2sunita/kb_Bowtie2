@@ -14,57 +14,50 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: GetBowtie2Index</p>
  * <pre>
- * Provide either a genome_ref or assembly_ref to get a Bowtie2 index for.
- * output_dir is optional, if provided the index files will be saved in that
- * directory.  If not, a directory will be generated for you and returned
- * by this function.
+ * Provide a reference to either an Assembly or Genome to get a Bowtie2 index.
+ *        output_dir is optional, if provided the index files will be saved in that
+ *        directory.  If not, a directory will be generated for you and returned
+ *        by this function.  If specifying the output_dir, the directory must not
+ *        exist yet (to ensure only the index files are added there).
+ *         
+ *        Currently, Bowtie2 indexes are cached to a WS object.  If that object does
+ *        not exist, then calling this function can create a new object.  To create
+ *        the cache, you must specify the ws name or ID in 'ws_for_cache' in which
+ *        to create the cached index.  If this field is not set, the result will
+ *        not be cached.  This parameter will eventually be deprecated once the
+ *        big file cache service is implemented.
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "genome_ref",
-    "assembly_ref",
-    "output_dir"
+    "ref",
+    "output_dir",
+    "ws_for_cache"
 })
 public class GetBowtie2Index {
 
-    @JsonProperty("genome_ref")
-    private String genomeRef;
-    @JsonProperty("assembly_ref")
-    private String assemblyRef;
+    @JsonProperty("ref")
+    private String ref;
     @JsonProperty("output_dir")
     private String outputDir;
+    @JsonProperty("ws_for_cache")
+    private String wsForCache;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("genome_ref")
-    public String getGenomeRef() {
-        return genomeRef;
+    @JsonProperty("ref")
+    public String getRef() {
+        return ref;
     }
 
-    @JsonProperty("genome_ref")
-    public void setGenomeRef(String genomeRef) {
-        this.genomeRef = genomeRef;
+    @JsonProperty("ref")
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 
-    public GetBowtie2Index withGenomeRef(String genomeRef) {
-        this.genomeRef = genomeRef;
-        return this;
-    }
-
-    @JsonProperty("assembly_ref")
-    public String getAssemblyRef() {
-        return assemblyRef;
-    }
-
-    @JsonProperty("assembly_ref")
-    public void setAssemblyRef(String assemblyRef) {
-        this.assemblyRef = assemblyRef;
-    }
-
-    public GetBowtie2Index withAssemblyRef(String assemblyRef) {
-        this.assemblyRef = assemblyRef;
+    public GetBowtie2Index withRef(String ref) {
+        this.ref = ref;
         return this;
     }
 
@@ -83,6 +76,21 @@ public class GetBowtie2Index {
         return this;
     }
 
+    @JsonProperty("ws_for_cache")
+    public String getWsForCache() {
+        return wsForCache;
+    }
+
+    @JsonProperty("ws_for_cache")
+    public void setWsForCache(String wsForCache) {
+        this.wsForCache = wsForCache;
+    }
+
+    public GetBowtie2Index withWsForCache(String wsForCache) {
+        this.wsForCache = wsForCache;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -95,7 +103,7 @@ public class GetBowtie2Index {
 
     @Override
     public String toString() {
-        return ((((((((("GetBowtie2Index"+" [genomeRef=")+ genomeRef)+", assemblyRef=")+ assemblyRef)+", outputDir=")+ outputDir)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((("GetBowtie2Index"+" [ref=")+ ref)+", outputDir=")+ outputDir)+", wsForCache=")+ wsForCache)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

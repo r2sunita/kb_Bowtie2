@@ -55,17 +55,40 @@ class kb_Bowtie2(object):
             'kb_Bowtie2.align_reads_to_assembly_app',
             [params], self._service_ver, context)
 
+    def align_one_reads_to_assembly(self, context=None):
+        """
+        aligns a single reads object to produce
+        """
+        return self._client.call_method(
+            'kb_Bowtie2.align_one_reads_to_assembly',
+            [], self._service_ver, context)
+
     def get_bowtie2_index(self, params, context=None):
         """
-        :param params: instance of type "GetBowtie2Index" (Provide either a
-           genome_ref or assembly_ref to get a Bowtie2 index for. output_dir
-           is optional, if provided the index files will be saved in that
-           directory.  If not, a directory will be generated for you and
-           returned by this function.) -> structure: parameter "genome_ref"
-           of String, parameter "assembly_ref" of String, parameter
-           "output_dir" of String
-        :returns: instance of type "GetBowtie2IndexResult" -> structure:
-           parameter "output_dir" of String
+        :param params: instance of type "GetBowtie2Index" (Provide a
+           reference to either an Assembly or Genome to get a Bowtie2 index.
+           output_dir is optional, if provided the index files will be saved
+           in that directory.  If not, a directory will be generated for you
+           and returned by this function.  If specifying the output_dir, the
+           directory must not exist yet (to ensure only the index files are
+           added there). Currently, Bowtie2 indexes are cached to a WS
+           object.  If that object does not exist, then calling this function
+           can create a new object.  To create the cache, you must specify
+           the ws name or ID in 'ws_for_cache' in which to create the cached
+           index.  If this field is not set, the result will not be cached. 
+           This parameter will eventually be deprecated once the big file
+           cache service is implemented.) -> structure: parameter "ref" of
+           String, parameter "output_dir" of String, parameter "ws_for_cache"
+           of String
+        :returns: instance of type "GetBowtie2IndexResult" (output_dir - the
+           folder containing the index files from_cache - 0 if the index was
+           built fresh, 1 if it was found in the cache pushed_to_cache - if
+           the index was rebuilt and successfully added to the cache, this
+           will be set to 1; otherwise set to 0) -> structure: parameter
+           "output_dir" of String, parameter "from_cache" of type "boolean"
+           (A boolean - 0 for false, 1 for true. @range (0, 1)), parameter
+           "pushed_to_cache" of type "boolean" (A boolean - 0 for false, 1
+           for true. @range (0, 1))
         """
         return self._client.call_method(
             'kb_Bowtie2.get_bowtie2_index',

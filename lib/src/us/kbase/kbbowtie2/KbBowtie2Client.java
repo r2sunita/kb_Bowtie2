@@ -180,6 +180,20 @@ public class KbBowtie2Client {
     }
 
     /**
+     * <p>Original spec-file function name: align_one_reads_to_assembly</p>
+     * <pre>
+     * aligns a single reads object to produce
+     * </pre>
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public void alignOneReadsToAssembly(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        TypeReference<Object> retType = new TypeReference<Object>() {};
+        caller.jsonrpcCall("kb_Bowtie2.align_one_reads_to_assembly", args, retType, false, true, jsonRpcContext, this.serviceVersion);
+    }
+
+    /**
      * <p>Original spec-file function name: get_bowtie2_index</p>
      * <pre>
      * </pre>

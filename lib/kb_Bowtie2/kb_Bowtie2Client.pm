@@ -238,6 +238,73 @@ AlignReadsResult is a reference to a hash where the following keys are defined:
  
 
 
+=head2 align_one_reads_to_assembly
+
+  $obj->align_one_reads_to_assembly()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+
+</pre>
+
+=end html
+
+=begin text
+
+
+
+=end text
+
+=item Description
+
+aligns a single reads object to produce
+
+=back
+
+=cut
+
+ sub align_one_reads_to_assembly
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 0)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function align_one_reads_to_assembly (received $n, expecting 0)");
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_Bowtie2.align_one_reads_to_assembly",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'align_one_reads_to_assembly',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return;
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method align_one_reads_to_assembly",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'align_one_reads_to_assembly',
+				       );
+    }
+}
+ 
+
+
 =head2 get_bowtie2_index
 
   $result = $obj->get_bowtie2_index($params)
@@ -252,11 +319,14 @@ AlignReadsResult is a reference to a hash where the following keys are defined:
 $params is a kb_Bowtie2.GetBowtie2Index
 $result is a kb_Bowtie2.GetBowtie2IndexResult
 GetBowtie2Index is a reference to a hash where the following keys are defined:
-	genome_ref has a value which is a string
-	assembly_ref has a value which is a string
+	ref has a value which is a string
 	output_dir has a value which is a string
+	ws_for_cache has a value which is a string
 GetBowtie2IndexResult is a reference to a hash where the following keys are defined:
 	output_dir has a value which is a string
+	from_cache has a value which is a kb_Bowtie2.boolean
+	pushed_to_cache has a value which is a kb_Bowtie2.boolean
+boolean is an int
 
 </pre>
 
@@ -267,11 +337,14 @@ GetBowtie2IndexResult is a reference to a hash where the following keys are defi
 $params is a kb_Bowtie2.GetBowtie2Index
 $result is a kb_Bowtie2.GetBowtie2IndexResult
 GetBowtie2Index is a reference to a hash where the following keys are defined:
-	genome_ref has a value which is a string
-	assembly_ref has a value which is a string
+	ref has a value which is a string
 	output_dir has a value which is a string
+	ws_for_cache has a value which is a string
 GetBowtie2IndexResult is a reference to a hash where the following keys are defined:
 	output_dir has a value which is a string
+	from_cache has a value which is a kb_Bowtie2.boolean
+	pushed_to_cache has a value which is a kb_Bowtie2.boolean
+boolean is an int
 
 
 =end text
@@ -505,6 +578,38 @@ sub _validate_version {
 
 
 
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+@range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
 =head2 AlignReadsParams
 
 =over 4
@@ -613,10 +718,19 @@ report_ref has a value which is a string
 
 =item Description
 
-Provide either a genome_ref or assembly_ref to get a Bowtie2 index for.
-output_dir is optional, if provided the index files will be saved in that
-directory.  If not, a directory will be generated for you and returned
-by this function.
+Provide a reference to either an Assembly or Genome to get a Bowtie2 index.
+
+       output_dir is optional, if provided the index files will be saved in that
+       directory.  If not, a directory will be generated for you and returned
+       by this function.  If specifying the output_dir, the directory must not
+       exist yet (to ensure only the index files are added there).
+        
+       Currently, Bowtie2 indexes are cached to a WS object.  If that object does
+       not exist, then calling this function can create a new object.  To create
+       the cache, you must specify the ws name or ID in 'ws_for_cache' in which
+       to create the cached index.  If this field is not set, the result will
+       not be cached.  This parameter will eventually be deprecated once the
+       big file cache service is implemented.
 
 
 =item Definition
@@ -625,9 +739,9 @@ by this function.
 
 <pre>
 a reference to a hash where the following keys are defined:
-genome_ref has a value which is a string
-assembly_ref has a value which is a string
+ref has a value which is a string
 output_dir has a value which is a string
+ws_for_cache has a value which is a string
 
 </pre>
 
@@ -636,9 +750,9 @@ output_dir has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-genome_ref has a value which is a string
-assembly_ref has a value which is a string
+ref has a value which is a string
 output_dir has a value which is a string
+ws_for_cache has a value which is a string
 
 
 =end text
@@ -653,6 +767,14 @@ output_dir has a value which is a string
 
 
 
+=item Description
+
+output_dir - the folder containing the index files
+from_cache - 0 if the index was built fresh, 1 if it was found in the cache
+pushed_to_cache - if the index was rebuilt and successfully added to the
+                  cache, this will be set to 1; otherwise set to 0
+
+
 =item Definition
 
 =begin html
@@ -660,6 +782,8 @@ output_dir has a value which is a string
 <pre>
 a reference to a hash where the following keys are defined:
 output_dir has a value which is a string
+from_cache has a value which is a kb_Bowtie2.boolean
+pushed_to_cache has a value which is a kb_Bowtie2.boolean
 
 </pre>
 
@@ -669,6 +793,8 @@ output_dir has a value which is a string
 
 a reference to a hash where the following keys are defined:
 output_dir has a value which is a string
+from_cache has a value which is a kb_Bowtie2.boolean
+pushed_to_cache has a value which is a kb_Bowtie2.boolean
 
 
 =end text

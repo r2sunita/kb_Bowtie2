@@ -51,8 +51,14 @@ module kb_Bowtie2 {
         returns (AlignReadsResult) authentication required;
 
 
+    /* aligns a single reads object to produce */
+    funcdef align_one_reads_to_assembly()
+        returns () authentication required;
 
-    /* Provide either a genome_ref or assembly_ref to get a Bowtie2 index for.
+
+
+    /* Provide a reference to either an Assembly or Genome to get a Bowtie2 index.
+
        output_dir is optional, if provided the index files will be saved in that
        directory.  If not, a directory will be generated for you and returned
        by this function.  If specifying the output_dir, the directory must not
@@ -66,10 +72,8 @@ module kb_Bowtie2 {
        big file cache service is implemented.
     */
     typedef structure {
-        string genome_ref;
-        string assembly_ref;
+        string ref;
         string output_dir;
-
         string ws_for_cache;
     } GetBowtie2Index;
 
