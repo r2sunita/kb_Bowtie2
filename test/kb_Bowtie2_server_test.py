@@ -101,6 +101,20 @@ class kb_Bowtie2Test(unittest.TestCase):
         return genome_ref
 
 
+    def loadPEReads(self):
+        if hasattr(self.__class__, 'assembly_ref'):
+            return self.__class__.assembly_ref
+        fasta_path = os.path.join(self.scratch, 'test.fna')
+        shutil.copy(os.path.join('data', 'test.fna'), fasta_path)
+        au = AssemblyUtil(self.callback_url)
+        assembly_ref = au.save_assembly_from_fasta({'file': {'path': fasta_path},
+                                                    'workspace_name': self.getWsName(),
+                                                    'assembly_name': 'test_assembly'
+                                                    })
+        self.__class__.assembly_ref = assembly_ref
+        return assembly_ref
+
+
     def getImpl(self):
         return self.__class__.serviceImpl
 
@@ -117,33 +131,41 @@ class kb_Bowtie2Test(unittest.TestCase):
 
         # test build directly from an assembly, forget to add ws_for_cache so object will not be cached
         assembly_ref = self.loadAssembly()
-        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})[0]
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'ref': assembly_ref})[0]
         self.assertIn('output_dir', res)
         self.assertIn('from_cache', res)
         self.assertEquals(res['from_cache'], 0)
         self.assertIn('pushed_to_cache', res)
         self.assertEquals(res['pushed_to_cache'], 0)
+        self.assertIn('index_files_basename', res)
+        self.assertEquals(res['index_files_basename'], 'test_assembly')
+
         pprint(res)
 
         # do it again, and set ws_for_cache
         assembly_ref = self.loadAssembly()
-        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref,
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'ref': assembly_ref,
                                                                    'ws_for_cache': self.getWsName()})[0]
         self.assertIn('output_dir', res)
         self.assertIn('from_cache', res)
         self.assertEquals(res['from_cache'], 0)
         self.assertIn('pushed_to_cache', res)
         self.assertEquals(res['pushed_to_cache'], 1)
+        self.assertIn('index_files_basename', res)
+        self.assertEquals(res['index_files_basename'], 'test_assembly')
+
         pprint(res)
 
         # do it again, should retrieve from cache
         assembly_ref = self.loadAssembly()
-        res = self.getImpl().get_bowtie2_index(self.getContext(), {'assembly_ref': assembly_ref})[0]
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'ref': assembly_ref})[0]
         self.assertIn('output_dir', res)
         self.assertIn('from_cache', res)
         self.assertEquals(res['from_cache'], 1)
         self.assertIn('pushed_to_cache', res)
         self.assertEquals(res['pushed_to_cache'], 0)
+        self.assertIn('index_files_basename', res)
+        self.assertEquals(res['index_files_basename'], 'test_assembly')
         pprint(res)
 
 
@@ -151,10 +173,12 @@ class kb_Bowtie2Test(unittest.TestCase):
 
         # finally, try it with a genome_ref instead
         genome_ref = self.loadGenome()
-        res = self.getImpl().get_bowtie2_index(self.getContext(), {'genome_ref': genome_ref})[0]
+        res = self.getImpl().get_bowtie2_index(self.getContext(), {'ref': genome_ref})[0]
         self.assertIn('output_dir', res)
         self.assertIn('from_cache', res)
         self.assertEquals(res['from_cache'], 0)
         self.assertIn('pushed_to_cache', res)
         self.assertEquals(res['pushed_to_cache'], 0)
+        self.assertIn('index_files_basename', res)
+        self.assertEquals(res['index_files_basename'], 'test_genome_assembly')
         pprint(res)

@@ -48,15 +48,10 @@ class Bowtie2IndexBuilder(object):
     def _validate_params(self, params):
         ''' validate parameters; can do some processing here to produce validated params '''
         validated_params = {'ref': None}
-        if 'assembly_ref' in params and params['assembly_ref']:
-            if 'genome_ref' in params:
-                raise ValueError('Both "genome_ref" and "assembly_ref" are set; use one and only one of these fields.')
-            validated_params['ref'] = params['assembly_ref']
+        if 'ref' in params and params['ref']:
+            validated_params['ref'] = params['ref']
         else:
-            if 'genome_ref' in params and params['genome_ref']:
-                validated_params['ref'] = params['genome_ref']
-            else:
-                raise ValueError('Either "genome_ref" or "assembly_ref" are required.')
+            raise ValueError('"ref" field indicating either an assembly or genome is required.')
 
         if 'output_dir' in params:
             validated_params['output_dir'] = params['output_dir']
@@ -134,7 +129,8 @@ class Bowtie2IndexBuilder(object):
                                              'unpack': 'unpack'})
             print('Cache hit: ')
             pprint(index_obj_data)
-            return {'output_dir': local_files['file_path']}
+            return {'output_dir': local_files['file_path'],
+                    'index_files_basename': index_obj_data['index_files_basename']}
 
 
         except Exception:
@@ -146,7 +142,7 @@ class Bowtie2IndexBuilder(object):
 
         return None
 
-    def _put_cached_index(self, assembly_info, output_dir, ws_for_cache):
+    def _put_cached_index(self, assembly_info, index_files_basename, output_dir, ws_for_cache):
 
         if not ws_for_cache:
             print('WARNING: bowtie2 index cannot be cached because "ws_for_cache" field not set')
@@ -158,7 +154,9 @@ class Bowtie2IndexBuilder(object):
                                         'make_handle': 1,
                                         'pack': 'targz'})
 
-            bowtie2_index = {'handle': result['handle'], 'size': result['size'], 'assembly_ref': assembly_info['ref']}
+            bowtie2_index = {'handle': result['handle'], 'size': result['size'],
+                             'assembly_ref': assembly_info['ref'],
+                             'index_files_basename': index_files_basename}
 
             ws = Workspace(self.ws_url)
             save_params = {'objects': [{'hidden': 1,
@@ -198,12 +196,14 @@ class Bowtie2IndexBuilder(object):
         os.makedirs(validated_params['output_dir'])
 
         # configure the command line args and run it
-        cli_params = self._build_cli_params(fasta_info, validated_params)
+        cli_params = self._build_cli_params(fasta_info['path'], fasta_info['assembly_name'], validated_params)
         self.bowtie2.run('bowtie2-build', cli_params)
-        index_info = {'output_dir': validated_params['output_dir']}
+        index_info = {'output_dir': validated_params['output_dir'],
+                      'index_files_basename': fasta_info['assembly_name']}
 
         # cache the result, mark if it worked or not
         cache_success = self._put_cached_index(assembly_info,
+                                               fasta_info['assembly_name'],
                                                validated_params['output_dir'],
                                                validated_params['ws_for_cache'])
         if cache_success:
@@ -214,14 +214,14 @@ class Bowtie2IndexBuilder(object):
         return index_info
 
 
-    def _build_cli_params(self, fasta_info, validated_params):
+    def _build_cli_params(self, fasta_file_path, index_files_basename, validated_params):
         cli_params = []
 
         # always run in quiet mode
         cli_params.append('--quiet')
 
         # positional args: first the fasta path, then the base name used for the index files
-        cli_params.append(fasta_info['path'])
-        cli_params.append(os.path.join(validated_params['output_dir'], fasta_info['assembly_name']))
+        cli_params.append(fasta_file_path)
+        cli_params.append(os.path.join(validated_params['output_dir'], index_files_basename))
 
         return cli_params
