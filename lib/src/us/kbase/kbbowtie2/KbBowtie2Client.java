@@ -167,7 +167,7 @@ public class KbBowtie2Client {
      * <pre>
      * </pre>
      * @param   params   instance of type {@link us.kbase.kbbowtie2.AlignReadsParams AlignReadsParams}
-     * @return   instance of type {@link us.kbase.kbbowtie2.AlignReadsResult AlignReadsResult}
+     * @return   parameter "result" of type {@link us.kbase.kbbowtie2.AlignReadsResult AlignReadsResult}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */

@@ -9,7 +9,6 @@ from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
 
 from ReadsUtils.ReadsUtilsClient import ReadsUtils
 
-from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from Workspace.WorkspaceClient import Workspace
 from GenomeAnnotationAPI.GenomeAnnotationAPIServiceClient import GenomeAnnotationAPI
 from DataFileUtil.DataFileUtilClient import DataFileUtil
@@ -20,51 +19,68 @@ class Bowtie2Aligner(object):
     def __init__(self, scratch_dir, workspace_url, callback_url, srv_wiz_url, provenance):
         self.scratch_dir = scratch_dir
         self.workspace_url = workspace_url
-        self.ws = Workspace(self.ws_url)
+        self.ws = Workspace(self.workspace_url)
         self.callback_url = callback_url
         self.srv_wiz_url = srv_wiz_url
         self.bowtie2 = Bowtie2Runner(self.scratch_dir)
         self.provenance = provenance
 
 
-    def run(self, params):
+    def align(self, params):
         validated_params = self.validate_params(params)
-        run_mode = self.determine_run_mode(validated_params)
+        input_info = self.determine_input_info(validated_params)
+        # input info provides information on the input and tells us if we should
+        # run as a single_library or as a set:
+        #     input_info = {'run_mode': '', 'info': [..], 'ref': '55/1/2'}
 
-        if run_mode == 'single_library':
-            read_lib_ref = validated_params['input_ref']
+        if input_info['run_mode'] == 'single_library':
             assembly_or_genome_ref = validated_params['assembly_or_genome_ref']
-            return self.single_reads_run(read_lib_ref, assembly_or_genome_ref,
-                                         validated_params, create_report=True)
+            single_lib_result = self.single_reads_lib_run(input_info, assembly_or_genome_ref,
+                                                          validated_params, create_report=True)
+            return single_lib_result['report_info']
 
-        if run_mode == 'sample_set':
+
+        if input_info['run_mode'] == 'sample_set':
             raise('sample set runs not yet supported')
 
-        raise('Improper run mode')
+
+        raise ('Improper run mode')
 
 
 
-    def single_reads_run(self, read_lib_info, assembly_or_genome_ref, validated_params,
-            create_report=False, bowtie2_index_dir=None):
+    def single_reads_lib_run(self, read_lib_info, assembly_or_genome_ref, validated_params,
+                             create_report=False, bowtie2_index_dir=None):
         ''' run on one reads '''
 
-        # download reads and 
+        # download reads and prepare any bowtie2 index files
+        input_configuration = self.prepare_single_run(read_lib_info, assembly_or_genome_ref,
+                                                      bowtie2_index_dir, validated_params['output_workspace'])
+        pprint(input_configuration)
 
-        setup_options = self.prepare_run(read_lib_info, assembly_or_genome_ref, bowtie2_index_dir)
-        self.run_bowtie2_align_cli(setup_options, validated_params)
-        self.save_output()
+        # run the actual program
+        self.run_bowtie2_align_cli(input_configuration, validated_params)
 
+        # process the result and save the output
+        output_info = self.save_output()
+
+        report_info = None
         if create_report:
-            self.create_report()
+            report_info = self.create_report(output_info)
 
-        self.clean()
+        self.clean(output_info)
+
+        results = {'output_info': output_info}
+        if report_info:
+            results['report_info'] = report_info
+
+        return results
 
 
-    def prepare_single_run(self, read_lib_info, assembly_or_genome_ref, bowtie2_index_dir,
-                           ws_for_cache):
+    def prepare_single_run(self, input_info, assembly_or_genome_ref,
+                           bowtie2_index_dir, ws_for_cache):
         ''' Given a reads ref and an assembly, setup the bowtie2 index '''
         # first setup the bowtie2 index of the assembly
-        setup = {'bowtie2_index_dir': bowtie2_index_dir}
+        input_configuration = {'bowtie2_index_dir': bowtie2_index_dir}
         if not bowtie2_index_dir:
             bowtie2IndexBuilder = Bowtie2IndexBuilder(self.scratch_dir, self.workspace_url,
                                                       self.callback_url, self.srv_wiz_url,
@@ -72,51 +88,49 @@ class Bowtie2Aligner(object):
 
             index_result = bowtie2IndexBuilder.get_index({'ref': assembly_or_genome_ref,
                                                           'ws_for_cache': ws_for_cache})
-            setup['bowtie2_index_dir'] = index_result['output_dir']
+            input_configuration['bowtie2_index_dir'] = index_result['output_dir']
 
         # next download the reads
-        read_lib_type = read_lib_info[1].split('-')[0]
-        read_lib_ref = str(read_lib_info[6]) + '/' + str(read_lib_info[0]) + '/' + str(read_lib_info[4])
+        read_lib_ref = input_info['ref']
+        read_lib_info = input_info['info']
         reads_params = {'read_libraries': [read_lib_ref],
                         'interleaved': 'false',
-                        'gzipped': None
-                        }
-        ru = ReadsUtils(self.callbackURL)
+                        'gzipped': None}
+        ru = ReadsUtils(self.callback_url)
         reads = ru.download_reads(reads_params)['files']
 
-        setup['reads_lib_type'] = read_lib_info[1].split('-')[0].split('.')[1]
-        setup['reads_files'] = reads
+        input_configuration['reads_lib_type'] = read_lib_info[2].split('-')[0].split('.')[1]
+        input_configuration['reads_files'] = reads
 
-        return setup
+        return input_configuration
 
 
 
     def validate_params(self, params):
         validated_params = {}
-        if 'input_ref' in params and params['input_ref']:
-            validated_params['input_ref'] = params['input_ref']
-        else:
-            raise ValueError('"input_ref" field pointing to reads or a sampleset required to run bowtie2 aligner')
 
-        if 'assembly_or_genome_ref' in params and params['assembly_or_genome_ref']:
-            validated_params['assembly_or_genome_ref'] = params['assembly_or_genome_ref']
-        else:
-            raise ValueError('"assembly_or_genome_ref" field required to run bowtie2 aligner')
+        required_string_fields = ['input_ref', 'assembly_or_genome_ref', 'output_name', 'output_workspace']
+        for field in required_string_fields:
+            if field in params and params[field]:
+                validated_params[field] = params[field]
+            else:
+                raise ValueError('"' + field + '" field required to run bowtie2 aligner app')
 
         return validated_params
 
 
-
-    def determine_run_mode(self, validated_params):
+    def determine_input_info(self, validated_params):
+        ''' get info on the input_ref object and determine if we run once or run on a set '''
         info = self.get_obj_info(validated_params['input_ref'])
-        obj_type = info[2]
+        obj_type = info[2].split('-')[0]
         if obj_type in ['KBaseAssembly.PairedEndLibrary', 'KBaseAssembly.SingleEndLibrary',
                         'KBaseFile.PairedEndLibrary', 'KBaseFile.SingleEndLibrary']:
-            return 'single_run'
+            return {'run_mode': 'single_library', 'info': info, 'ref': validated_params['input_ref']}
         if obj_type == 'KBaseRNASeq.SampleSet':
-            return 'sample_set'
+            return {'run_mode': 'sample_set', 'info': info, 'ref': validated_params['input_ref']}
 
         raise ValueError('Object type of input_ref is not valid, was: ' + str(obj_type))
+
 
     def get_obj_info(self, ref):
         return self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0]

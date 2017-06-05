@@ -35,18 +35,26 @@ class kb_Bowtie2(object):
 
     def align_reads_to_assembly_app(self, params, context=None):
         """
-        :param params: instance of type "AlignReadsParams" -> structure:
-           parameter "reads_ref" of String, parameter "assembly_ref" of
-           String, parameter "genome_ref" of String, parameter "output_name"
-           of String, parameter "ws_id" of String, parameter "sampleset_id"
-           of String, parameter "genome_id" of String, parameter
-           "bowtie_index" of String, parameter "phred33" of String, parameter
-           "phred64" of String, parameter "local" of String, parameter
-           "very-fast" of String, parameter "fast" of String, parameter
-           "very-sensitive" of String, parameter "sensitive" of String,
-           parameter "very-fast-local" of String, parameter
-           "very-sensitive-local" of String, parameter "fast-local" of
-           String, parameter "fast-sensitive" of String
+        :param params: instance of type "AlignReadsParams" (Will align the
+           input reads (or set of reads specified in a SampleSet) to the
+           specified assembly or assembly for the specified Genome (accepts
+           Assembly, ContigSet, or Genome types) and produces a
+           ReadsAlignment object, or in the case of a SampleSet, a
+           ReadsAlignmentSet object. required: input_ref - ref to either a
+           SingleEnd/PairedEnd reads, or a SampleSet input (eventually should
+           support a ReadsSet as well) assembly_or_genome - ref to Assembly,
+           ContigSet, or Genome output_name - name of the output
+           ReadsAlignment or ReadsAlignmentSet output_workspace - name or id
+           of the WS to save the results to optional: ...) -> structure:
+           parameter "input_ref" of String, parameter
+           "assembly_or_genome_ref" of String, parameter "output_name" of
+           String, parameter "output_workspace" of String, parameter
+           "phred33" of String, parameter "phred64" of String, parameter
+           "local" of String, parameter "very-fast" of String, parameter
+           "fast" of String, parameter "very-sensitive" of String, parameter
+           "sensitive" of String, parameter "very-fast-local" of String,
+           parameter "very-sensitive-local" of String, parameter "fast-local"
+           of String, parameter "fast-sensitive" of String
         :returns: instance of type "AlignReadsResult" -> structure: parameter
            "reads_alignment_ref" of String, parameter "report_name" of
            String, parameter "report_ref" of String

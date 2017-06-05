@@ -3,6 +3,7 @@
 import os
 from pprint import pprint
 from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
+from kb_Bowtie2.util.Bowtie2Aligner import Bowtie2Aligner
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 #END_HEADER
 
@@ -24,7 +25,7 @@ class kb_Bowtie2:
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "git@github.com:kbaseapps/kb_Bowtie2.git"
-    GIT_COMMIT_HASH = "2535490ea24682fbb72d248443ed2cdb2e250bda"
+    GIT_COMMIT_HASH = "288212c501d14cd88a6451dde446bfd7bb2ea6d9"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -43,33 +44,46 @@ class kb_Bowtie2:
 
     def align_reads_to_assembly_app(self, ctx, params):
         """
-        :param params: instance of type "AlignReadsParams" -> structure:
-           parameter "reads_ref" of String, parameter "assembly_ref" of
-           String, parameter "genome_ref" of String, parameter "output_name"
-           of String, parameter "ws_id" of String, parameter "sampleset_id"
-           of String, parameter "genome_id" of String, parameter
-           "bowtie_index" of String, parameter "phred33" of String, parameter
-           "phred64" of String, parameter "local" of String, parameter
-           "very-fast" of String, parameter "fast" of String, parameter
-           "very-sensitive" of String, parameter "sensitive" of String,
-           parameter "very-fast-local" of String, parameter
-           "very-sensitive-local" of String, parameter "fast-local" of
-           String, parameter "fast-sensitive" of String
+        :param params: instance of type "AlignReadsParams" (Will align the
+           input reads (or set of reads specified in a SampleSet) to the
+           specified assembly or assembly for the specified Genome (accepts
+           Assembly, ContigSet, or Genome types) and produces a
+           ReadsAlignment object, or in the case of a SampleSet, a
+           ReadsAlignmentSet object. required: input_ref - ref to either a
+           SingleEnd/PairedEnd reads, or a SampleSet input (eventually should
+           support a ReadsSet as well) assembly_or_genome - ref to Assembly,
+           ContigSet, or Genome output_name - name of the output
+           ReadsAlignment or ReadsAlignmentSet output_workspace - name or id
+           of the WS to save the results to optional: ...) -> structure:
+           parameter "input_ref" of String, parameter
+           "assembly_or_genome_ref" of String, parameter "output_name" of
+           String, parameter "output_workspace" of String, parameter
+           "phred33" of String, parameter "phred64" of String, parameter
+           "local" of String, parameter "very-fast" of String, parameter
+           "fast" of String, parameter "very-sensitive" of String, parameter
+           "sensitive" of String, parameter "very-fast-local" of String,
+           parameter "very-sensitive-local" of String, parameter "fast-local"
+           of String, parameter "fast-sensitive" of String
         :returns: instance of type "AlignReadsResult" -> structure: parameter
            "reads_alignment_ref" of String, parameter "report_name" of
            String, parameter "report_ref" of String
         """
         # ctx is the context object
-        # return variables are: returnVal
+        # return variables are: result
         #BEGIN align_reads_to_assembly_app
+        print('Running align_reads_to_assembly_app() with params=')
+        bowtie2_aligner = Bowtie2Aligner(self.scratch_dir, self.workspace_url,
+                                         self.callback_url, self.srv_wiz_url,
+                                         ctx.provenance())
+        result = bowtie2_aligner.align(params)
         #END align_reads_to_assembly_app
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
+        if not isinstance(result, dict):
             raise ValueError('Method align_reads_to_assembly_app return value ' +
-                             'returnVal is not type dict as required.')
+                             'result is not type dict as required.')
         # return the results
-        return [returnVal]
+        return [result]
 
     def align_one_reads_to_assembly(self, ctx):
         """

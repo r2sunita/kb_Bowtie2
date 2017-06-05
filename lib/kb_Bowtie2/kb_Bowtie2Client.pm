@@ -110,7 +110,7 @@ sub new
 
 =head2 align_reads_to_assembly_app
 
-  $return = $obj->align_reads_to_assembly_app($params)
+  $result = $obj->align_reads_to_assembly_app($params)
 
 =over 4
 
@@ -120,16 +120,12 @@ sub new
 
 <pre>
 $params is a kb_Bowtie2.AlignReadsParams
-$return is a kb_Bowtie2.AlignReadsResult
+$result is a kb_Bowtie2.AlignReadsResult
 AlignReadsParams is a reference to a hash where the following keys are defined:
-	reads_ref has a value which is a string
-	assembly_ref has a value which is a string
-	genome_ref has a value which is a string
+	input_ref has a value which is a string
+	assembly_or_genome_ref has a value which is a string
 	output_name has a value which is a string
-	ws_id has a value which is a string
-	sampleset_id has a value which is a string
-	genome_id has a value which is a string
-	bowtie_index has a value which is a string
+	output_workspace has a value which is a string
 	phred33 has a value which is a string
 	phred64 has a value which is a string
 	local has a value which is a string
@@ -153,16 +149,12 @@ AlignReadsResult is a reference to a hash where the following keys are defined:
 =begin text
 
 $params is a kb_Bowtie2.AlignReadsParams
-$return is a kb_Bowtie2.AlignReadsResult
+$result is a kb_Bowtie2.AlignReadsResult
 AlignReadsParams is a reference to a hash where the following keys are defined:
-	reads_ref has a value which is a string
-	assembly_ref has a value which is a string
-	genome_ref has a value which is a string
+	input_ref has a value which is a string
+	assembly_or_genome_ref has a value which is a string
 	output_name has a value which is a string
-	ws_id has a value which is a string
-	sampleset_id has a value which is a string
-	genome_id has a value which is a string
-	bowtie_index has a value which is a string
+	output_workspace has a value which is a string
 	phred33 has a value which is a string
 	phred64 has a value which is a string
 	local has a value which is a string
@@ -616,20 +608,34 @@ an int
 
 
 
+=item Description
+
+Will align the input reads (or set of reads specified in a SampleSet) to the specified
+assembly or assembly for the specified Genome (accepts Assembly, ContigSet, or Genome types)
+and produces a ReadsAlignment object, or in the case of a SampleSet, a ReadsAlignmentSet
+object.
+
+required:
+    input_ref - ref to either a SingleEnd/PairedEnd reads, or a SampleSet input
+                (eventually should support a ReadsSet as well)
+    assembly_or_genome - ref to Assembly, ContigSet, or Genome
+    output_name - name of the output ReadsAlignment or ReadsAlignmentSet
+    output_workspace - name or id of the WS to save the results to
+
+optional:
+    ...
+
+
 =item Definition
 
 =begin html
 
 <pre>
 a reference to a hash where the following keys are defined:
-reads_ref has a value which is a string
-assembly_ref has a value which is a string
-genome_ref has a value which is a string
+input_ref has a value which is a string
+assembly_or_genome_ref has a value which is a string
 output_name has a value which is a string
-ws_id has a value which is a string
-sampleset_id has a value which is a string
-genome_id has a value which is a string
-bowtie_index has a value which is a string
+output_workspace has a value which is a string
 phred33 has a value which is a string
 phred64 has a value which is a string
 local has a value which is a string
@@ -649,14 +655,10 @@ fast-sensitive has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-reads_ref has a value which is a string
-assembly_ref has a value which is a string
-genome_ref has a value which is a string
+input_ref has a value which is a string
+assembly_or_genome_ref has a value which is a string
 output_name has a value which is a string
-ws_id has a value which is a string
-sampleset_id has a value which is a string
-genome_id has a value which is a string
-bowtie_index has a value which is a string
+output_workspace has a value which is a string
 phred33 has a value which is a string
 phred64 has a value which is a string
 local has a value which is a string

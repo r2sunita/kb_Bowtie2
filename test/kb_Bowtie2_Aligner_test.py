@@ -66,6 +66,7 @@ class kb_Bowtie2AlignerTest(unittest.TestCase):
     def getWsName(self):
         if hasattr(self.__class__, 'wsName'):
             return self.__class__.wsName
+        return 'test_kb_Bowtie2_1496682839453'
         suffix = int(time.time() * 1000)
         wsName = "test_kb_Bowtie2_" + str(suffix)
         ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
@@ -76,6 +77,7 @@ class kb_Bowtie2AlignerTest(unittest.TestCase):
     def loadSingleEndReads(self):
         if hasattr(self.__class__, 'se_reads_ref'):
             return self.__class__.se_reads_ref
+        return '22158/1/2'
         fq_path = os.path.join(self.scratch, 'reads_1_se.fq')
         shutil.copy(os.path.join('data', 'bt_test_data', 'reads_1.fq'), fq_path)
 
@@ -108,6 +110,7 @@ class kb_Bowtie2AlignerTest(unittest.TestCase):
     def loadAssembly(self):
         if hasattr(self.__class__, 'assembly_ref'):
             return self.__class__.assembly_ref
+        return '22158/1/1'
         fasta_path = os.path.join(self.scratch, 'test_ref.fa')
         shutil.copy(os.path.join('data', 'bt_test_data', 'test_ref.fa'), fasta_path)
         au = AssemblyUtil(self.callback_url)
@@ -127,8 +130,19 @@ class kb_Bowtie2AlignerTest(unittest.TestCase):
 
 
     def test_bowtie2_aligner(self):
-        self.loadAssembly()
-        self.loadSingleEndReads()
-        self.loadPairedEndReads()
+        assembly_ref = self.loadAssembly()
+        se_lib_ref = self.loadSingleEndReads()
+
+        params = {'input_ref': se_lib_ref,
+                  'assembly_or_genome_ref': assembly_ref,
+                  'output_name': 'readsAlignment1',
+                  'output_workspace': self.getWsName()}
+        pprint(params)
+        res = self.getImpl().align_reads_to_assembly_app(self.getContext(), params)[0]
+        pprint(res)
+
+
+
+
 
 

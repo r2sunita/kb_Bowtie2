@@ -10,21 +10,30 @@ module kb_Bowtie2 {
     typedef int boolean;
 
     /*
+        Will align the input reads (or set of reads specified in a SampleSet) to the specified
+        assembly or assembly for the specified Genome (accepts Assembly, ContigSet, or Genome types)
+        and produces a ReadsAlignment object, or in the case of a SampleSet, a ReadsAlignmentSet
+        object.
+
+        required:
+            input_ref - ref to either a SingleEnd/PairedEnd reads, or a SampleSet input
+                        (eventually should support a ReadsSet as well)
+            assembly_or_genome - ref to Assembly, ContigSet, or Genome
+            output_name - name of the output ReadsAlignment or ReadsAlignmentSet
+            output_workspace - name or id of the WS to save the results to
+
+        optional:
+            ...
     */
     typedef structure {
 
-        string reads_ref;
+        string input_ref;
 
-        string assembly_ref;
-        string genome_ref;
+        string assembly_or_genome_ref;
 
         string output_name;
+        string output_workspace;
 
-
-        string ws_id;
-        string sampleset_id;
-        string genome_id;
-        string bowtie_index;
         string phred33;
         string phred64;
         string local;
@@ -48,7 +57,7 @@ module kb_Bowtie2 {
 
 
     funcdef align_reads_to_assembly_app(AlignReadsParams params)
-        returns (AlignReadsResult) authentication required;
+        returns (AlignReadsResult result) authentication required;
 
 
     /* aligns a single reads object to produce */

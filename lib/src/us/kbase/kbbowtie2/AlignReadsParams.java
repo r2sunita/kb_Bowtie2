@@ -13,20 +13,29 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * <p>Original spec-file type: AlignReadsParams</p>
- * 
+ * <pre>
+ * Will align the input reads (or set of reads specified in a SampleSet) to the specified
+ * assembly or assembly for the specified Genome (accepts Assembly, ContigSet, or Genome types)
+ * and produces a ReadsAlignment object, or in the case of a SampleSet, a ReadsAlignmentSet
+ * object.
+ * required:
+ *     input_ref - ref to either a SingleEnd/PairedEnd reads, or a SampleSet input
+ *                 (eventually should support a ReadsSet as well)
+ *     assembly_or_genome - ref to Assembly, ContigSet, or Genome
+ *     output_name - name of the output ReadsAlignment or ReadsAlignmentSet
+ *     output_workspace - name or id of the WS to save the results to
+ * optional:
+ *     ...
+ * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "reads_ref",
-    "assembly_ref",
-    "genome_ref",
+    "input_ref",
+    "assembly_or_genome_ref",
     "output_name",
-    "ws_id",
-    "sampleset_id",
-    "genome_id",
-    "bowtie_index",
+    "output_workspace",
     "phred33",
     "phred64",
     "local",
@@ -41,22 +50,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 public class AlignReadsParams {
 
-    @JsonProperty("reads_ref")
-    private String readsRef;
-    @JsonProperty("assembly_ref")
-    private String assemblyRef;
-    @JsonProperty("genome_ref")
-    private String genomeRef;
+    @JsonProperty("input_ref")
+    private String inputRef;
+    @JsonProperty("assembly_or_genome_ref")
+    private String assemblyOrGenomeRef;
     @JsonProperty("output_name")
     private String outputName;
-    @JsonProperty("ws_id")
-    private String wsId;
-    @JsonProperty("sampleset_id")
-    private String samplesetId;
-    @JsonProperty("genome_id")
-    private String genomeId;
-    @JsonProperty("bowtie_index")
-    private String bowtieIndex;
+    @JsonProperty("output_workspace")
+    private String outputWorkspace;
     @JsonProperty("phred33")
     private String phred33;
     @JsonProperty("phred64")
@@ -81,48 +82,33 @@ public class AlignReadsParams {
     private String fastSensitive;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("reads_ref")
-    public String getReadsRef() {
-        return readsRef;
+    @JsonProperty("input_ref")
+    public String getInputRef() {
+        return inputRef;
     }
 
-    @JsonProperty("reads_ref")
-    public void setReadsRef(String readsRef) {
-        this.readsRef = readsRef;
+    @JsonProperty("input_ref")
+    public void setInputRef(String inputRef) {
+        this.inputRef = inputRef;
     }
 
-    public AlignReadsParams withReadsRef(String readsRef) {
-        this.readsRef = readsRef;
+    public AlignReadsParams withInputRef(String inputRef) {
+        this.inputRef = inputRef;
         return this;
     }
 
-    @JsonProperty("assembly_ref")
-    public String getAssemblyRef() {
-        return assemblyRef;
+    @JsonProperty("assembly_or_genome_ref")
+    public String getAssemblyOrGenomeRef() {
+        return assemblyOrGenomeRef;
     }
 
-    @JsonProperty("assembly_ref")
-    public void setAssemblyRef(String assemblyRef) {
-        this.assemblyRef = assemblyRef;
+    @JsonProperty("assembly_or_genome_ref")
+    public void setAssemblyOrGenomeRef(String assemblyOrGenomeRef) {
+        this.assemblyOrGenomeRef = assemblyOrGenomeRef;
     }
 
-    public AlignReadsParams withAssemblyRef(String assemblyRef) {
-        this.assemblyRef = assemblyRef;
-        return this;
-    }
-
-    @JsonProperty("genome_ref")
-    public String getGenomeRef() {
-        return genomeRef;
-    }
-
-    @JsonProperty("genome_ref")
-    public void setGenomeRef(String genomeRef) {
-        this.genomeRef = genomeRef;
-    }
-
-    public AlignReadsParams withGenomeRef(String genomeRef) {
-        this.genomeRef = genomeRef;
+    public AlignReadsParams withAssemblyOrGenomeRef(String assemblyOrGenomeRef) {
+        this.assemblyOrGenomeRef = assemblyOrGenomeRef;
         return this;
     }
 
@@ -141,63 +127,18 @@ public class AlignReadsParams {
         return this;
     }
 
-    @JsonProperty("ws_id")
-    public String getWsId() {
-        return wsId;
+    @JsonProperty("output_workspace")
+    public String getOutputWorkspace() {
+        return outputWorkspace;
     }
 
-    @JsonProperty("ws_id")
-    public void setWsId(String wsId) {
-        this.wsId = wsId;
+    @JsonProperty("output_workspace")
+    public void setOutputWorkspace(String outputWorkspace) {
+        this.outputWorkspace = outputWorkspace;
     }
 
-    public AlignReadsParams withWsId(String wsId) {
-        this.wsId = wsId;
-        return this;
-    }
-
-    @JsonProperty("sampleset_id")
-    public String getSamplesetId() {
-        return samplesetId;
-    }
-
-    @JsonProperty("sampleset_id")
-    public void setSamplesetId(String samplesetId) {
-        this.samplesetId = samplesetId;
-    }
-
-    public AlignReadsParams withSamplesetId(String samplesetId) {
-        this.samplesetId = samplesetId;
-        return this;
-    }
-
-    @JsonProperty("genome_id")
-    public String getGenomeId() {
-        return genomeId;
-    }
-
-    @JsonProperty("genome_id")
-    public void setGenomeId(String genomeId) {
-        this.genomeId = genomeId;
-    }
-
-    public AlignReadsParams withGenomeId(String genomeId) {
-        this.genomeId = genomeId;
-        return this;
-    }
-
-    @JsonProperty("bowtie_index")
-    public String getBowtieIndex() {
-        return bowtieIndex;
-    }
-
-    @JsonProperty("bowtie_index")
-    public void setBowtieIndex(String bowtieIndex) {
-        this.bowtieIndex = bowtieIndex;
-    }
-
-    public AlignReadsParams withBowtieIndex(String bowtieIndex) {
-        this.bowtieIndex = bowtieIndex;
+    public AlignReadsParams withOutputWorkspace(String outputWorkspace) {
+        this.outputWorkspace = outputWorkspace;
         return this;
     }
 
@@ -378,7 +319,7 @@ public class AlignReadsParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((((((((("AlignReadsParams"+" [readsRef=")+ readsRef)+", assemblyRef=")+ assemblyRef)+", genomeRef=")+ genomeRef)+", outputName=")+ outputName)+", wsId=")+ wsId)+", samplesetId=")+ samplesetId)+", genomeId=")+ genomeId)+", bowtieIndex=")+ bowtieIndex)+", phred33=")+ phred33)+", phred64=")+ phred64)+", local=")+ local)+", veryFast=")+ veryFast)+", fast=")+ fast)+", verySensitive=")+ verySensitive)+", sensitive=")+ sensitive)+", veryFastLocal=")+ veryFastLocal)+", verySensitiveLocal=")+ verySensitiveLocal)+", fastLocal=")+ fastLocal)+", fastSensitive=")+ fastSensitive)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((("AlignReadsParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputName=")+ outputName)+", outputWorkspace=")+ outputWorkspace)+", phred33=")+ phred33)+", phred64=")+ phred64)+", local=")+ local)+", veryFast=")+ veryFast)+", fast=")+ fast)+", verySensitive=")+ verySensitive)+", sensitive=")+ sensitive)+", veryFastLocal=")+ veryFastLocal)+", verySensitiveLocal=")+ verySensitiveLocal)+", fastLocal=")+ fastLocal)+", fastSensitive=")+ fastSensitive)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
