@@ -18,7 +18,7 @@ class Bowtie2Runner:
                                'bowtie2-inspect-l',
                                'bowtie2-inspect-s']
 
-    def run(self, command, options):
+    def run(self, command, options, cwd=None):
         ''' options is an array of command-line parameters passed to the RQCFilter App '''
         if command not in self.valid_commands:
             raise ValueError('Invalid bowtie2 command: ' + str(command))
@@ -28,7 +28,11 @@ class Bowtie2Runner:
         print('In working directory: ' + ' '.join(command))
         print('Running: ' + ' '.join(command))
 
-        p = subprocess.Popen(command, cwd=self.scratch_dir, shell=False)
+
+        if not cwd:
+          cwd = self.scratch_dir
+
+        p = subprocess.Popen(command, cwd=cwd, shell=False)
         exitCode = p.wait()
 
         if (exitCode == 0):

@@ -49,16 +49,18 @@ class Bowtie2Aligner(object):
 
 
     def single_reads_lib_run(self, read_lib_info, assembly_or_genome_ref, validated_params,
-                             create_report=False, bowtie2_index_dir=None):
+                             create_report=False, bowtie2_index_info=None):
         ''' run on one reads '''
 
         # download reads and prepare any bowtie2 index files
         input_configuration = self.prepare_single_run(read_lib_info, assembly_or_genome_ref,
-                                                      bowtie2_index_dir, validated_params['output_workspace'])
+                                                      bowtie2_index_info, validated_params['output_workspace'])
         pprint(input_configuration)
 
         # run the actual program
         self.run_bowtie2_align_cli(input_configuration, validated_params)
+
+        return {}
 
         # process the result and save the output
         output_info = self.save_output()
@@ -77,18 +79,18 @@ class Bowtie2Aligner(object):
 
 
     def prepare_single_run(self, input_info, assembly_or_genome_ref,
-                           bowtie2_index_dir, ws_for_cache):
+                           bowtie2_index_info, ws_for_cache):
         ''' Given a reads ref and an assembly, setup the bowtie2 index '''
         # first setup the bowtie2 index of the assembly
-        input_configuration = {'bowtie2_index_dir': bowtie2_index_dir}
-        if not bowtie2_index_dir:
+        input_configuration = {'bowtie2_index_info': bowtie2_index_info}
+        if not bowtie2_index_info:
             bowtie2IndexBuilder = Bowtie2IndexBuilder(self.scratch_dir, self.workspace_url,
                                                       self.callback_url, self.srv_wiz_url,
                                                       self.provenance)
 
             index_result = bowtie2IndexBuilder.get_index({'ref': assembly_or_genome_ref,
                                                           'ws_for_cache': ws_for_cache})
-            input_configuration['bowtie2_index_dir'] = index_result['output_dir']
+            input_configuration['bowtie2_index_info'] = index_result
 
         # next download the reads
         read_lib_ref = input_info['ref']
@@ -100,10 +102,38 @@ class Bowtie2Aligner(object):
         reads = ru.download_reads(reads_params)['files']
 
         input_configuration['reads_lib_type'] = read_lib_info[2].split('-')[0].split('.')[1]
-        input_configuration['reads_files'] = reads
+        input_configuration['reads_files'] = reads[read_lib_ref]
 
         return input_configuration
 
+
+    def run_bowtie2_align_cli(self, input_configuration, validated_params):
+
+        pprint('======== input_configuration =====')
+        pprint(input_configuration)
+        options = []
+
+        # set the bowtie2 index location
+        bt2_index_dir = input_configuration['bowtie2_index_info']['output_dir']
+        bt2_index_basename = input_configuration['bowtie2_index_info']['index_files_basename']
+        options.extend(['-x', bt2_index_basename])
+
+        # set the input reads
+        if input_configuration['reads_lib_type'] == 'SingleEndLibrary':
+            options.extend(['-U', input_configuration['reads_files']['files']['fwd']])
+        elif input_configuration['reads_lib_type'] == 'PairedEndLibrary':
+            options.extend(['-1', input_configuration['reads_files']['files']['fwd']])
+            options.extend(['-2', input_configuration['reads_files']['files']['rev']])
+
+        # setup the output file name
+        output_dir = os.path.join(self.scratch_dir, 'bowtie2_alignment_output_' + str(int(time.time() * 10000)))
+        os.makedirs(output_dir)
+        options.extend(['-S', os.path.join(output_dir, 'reads_alignment.sam')])
+
+        # unfortunately, bowtie2 expects the index files to be in the current directory, and
+        # you cannot configure it otherwise.  So run bowtie out of the index directory, but
+        # place the output SAM file somewhere else
+        self.bowtie2.run('bowtie2', options, cwd=bt2_index_dir)
 
 
     def validate_params(self, params):

@@ -57,7 +57,7 @@ class Bowtie2IndexBuilder(object):
             validated_params['output_dir'] = params['output_dir']
         else:
             validated_params['output_dir'] = os.path.join(self.scratch_dir,
-                                                          'bowtie2_build' + str(int(time.time() * 100)))
+                                                          'bowtie2_index_' + str(int(time.time() * 100)))
 
         if os.path.exists(validated_params['output_dir']):
             raise('Output directory name specified (' + validated_params['output_dir'] +
@@ -123,13 +123,15 @@ class Bowtie2IndexBuilder(object):
             index_obj_data = self.ws.get_objects2({'objects': [{'ref': index_ref}]})['data'][0]['data']
 
             # download the handle object
+            os.makedirs(validated_params['output_dir'])
+
             dfu = DataFileUtil(self.callback_url)
-            local_files = dfu.shock_to_file({'file_path': validated_params['output_dir'],
+            local_files = dfu.shock_to_file({'file_path': os.path.join(validated_params['output_dir'], 'bt2_index.tar.gz'),
                                              'handle_id': index_obj_data['handle']['hid'],
                                              'unpack': 'unpack'})
             print('Cache hit: ')
             pprint(index_obj_data)
-            return {'output_dir': local_files['file_path'],
+            return {'output_dir': validated_params['output_dir'],
                     'index_files_basename': index_obj_data['index_files_basename']}
 
 
