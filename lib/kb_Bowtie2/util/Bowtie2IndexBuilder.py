@@ -42,6 +42,9 @@ class Bowtie2IndexBuilder(object):
             index_info['from_cache'] = 0
             # pushed_to_cache will be set in return from _build_index
 
+        index_info['assembly_ref'] = assembly_info['ref']
+        index_info['genome_ref'] = assembly_info['genome_ref']
+
         return index_info
 
 
@@ -77,7 +80,7 @@ class Bowtie2IndexBuilder(object):
         info = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0]
         obj_type = info[2]
         if obj_type.startswith('KBaseGenomeAnnotations.Assembly') or obj_type.startswith('KBaseGenomes.ContigSet'):
-            return {'info': info, 'ref': ref}
+            return {'info': info, 'ref': ref, 'genome_ref': None}
 
         if obj_type.startswith('KBaseGenomes.Genome'):
             # we need to get the assembly for this genome
@@ -86,7 +89,7 @@ class Bowtie2IndexBuilder(object):
             # using the path ensures we can access the assembly even if we don't have direct access
             ref_path = ref + ';' + assembly_ref
             info = self.ws.get_object_info3({'objects': [{'ref': ref_path}]})['infos'][0]
-            return {'info': info, 'ref': ref_path}
+            return {'info': info, 'ref': ref_path, 'genome_ref': ref}
 
         raise ValueError('Input object was not of type: Assembly, ContigSet or Genome.  Cannot get Bowtie2 Index.')
 
@@ -126,9 +129,9 @@ class Bowtie2IndexBuilder(object):
             os.makedirs(validated_params['output_dir'])
 
             dfu = DataFileUtil(self.callback_url)
-            local_files = dfu.shock_to_file({'file_path': os.path.join(validated_params['output_dir'], 'bt2_index.tar.gz'),
-                                             'handle_id': index_obj_data['handle']['hid'],
-                                             'unpack': 'unpack'})
+            dfu.shock_to_file({'file_path': os.path.join(validated_params['output_dir'], 'bt2_index.tar.gz'),
+                               'handle_id': index_obj_data['handle']['hid'],
+                               'unpack': 'unpack'})
             print('Cache hit: ')
             pprint(index_obj_data)
             return {'output_dir': validated_params['output_dir'],
