@@ -2,17 +2,16 @@ from pprint import pprint
 
 import os
 import time
-import traceback
 
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
 
 from ReadsUtils.ReadsUtilsClient import ReadsUtils
 from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from KBaseReport.KBaseReportClient import KBaseReport
 
 from Workspace.WorkspaceClient import Workspace
-from GenomeAnnotationAPI.GenomeAnnotationAPIServiceClient import GenomeAnnotationAPI
-from DataFileUtil.DataFileUtilClient import DataFileUtil
+from SetAPI.SetAPIServiceClient import SetAPI
 
 
 class Bowtie2Aligner(object):
@@ -42,8 +41,20 @@ class Bowtie2Aligner(object):
 
 
         if input_info['run_mode'] == 'sample_set':
+
             raise('sample set runs not yet supported')
 
+            reads_refs = self.fetch_reads_refs_from_sampleset(input_info['ref'])
+            single_lib_result_list = {}
+            for readlib in reads_refs:
+                reads_info = self.get_obj_info(readlib['ref'])
+                input_info = {'info': reads_info, 'ref': readlib['ref'], 'condition': readlib['condition']}
+                single_lib_result = self.single_reads_lib_run(input_info, assembly_or_genome_ref,
+                                                              validated_params, create_report=False)
+                single_lib_result_list[readlib['ref']] = single_lib_result
+
+            batch_result = self.process_batch_result(single_lib_result_list)
+            return batch_result['report_info']
 
         raise ('Improper run mode')
 
@@ -62,7 +73,8 @@ class Bowtie2Aligner(object):
         run_output_info = self.run_bowtie2_align_cli(input_configuration, validated_params)
 
         # process the result and save the output
-        self.save_read_alignment_output(run_output_info, input_configuration, validated_params)
+        upload_results = self.save_read_alignment_output(run_output_info, input_configuration, validated_params)
+        run_output_info['upload_results'] = upload_results
 
         report_info = None
         if create_report:
@@ -70,11 +82,7 @@ class Bowtie2Aligner(object):
 
         self.clean(run_output_info)
 
-        results = {'output_info': run_output_info}
-        if report_info:
-            results['report_info'] = report_info
-
-        return results
+        return {'output_info': run_output_info, 'report_info': report_info}
 
 
     def prepare_single_run(self, input_info, assembly_or_genome_ref,
@@ -147,21 +155,27 @@ class Bowtie2Aligner(object):
     def save_read_alignment_output(self, run_output_info, input_configuration, validated_params):
         rau = ReadsAlignmentUtils(self.callback_url)
         destination_ref = validated_params['output_workspace'] + '/' + validated_params['output_name']
-        bowtie2_index_info = input_configuration['bowtie2_index_info']
-        upload_params = {'file_path': run_output_info,
+        upload_params = {'file_path': run_output_info['output_sam_file'],
                          'destination_ref': destination_ref,
-                         'library_type': run_output_info['library_type'], # hopefully won't be needed
-                         'read_sample_id': input_configuration['reads_lib_ref'],
-                         'assembly_ref': bowtie2_index_info['assembly_ref'],
-                         'genome_id': bowtie2_index_info['assembly_ref'], # need to update this!
+                         'read_library_ref': input_configuration['reads_lib_ref'],
+                         'assembly_or_genome_ref': validated_params['input_ref'],
                          'condition': 'unknown'}
-
         upload_results = rau.upload_alignment(upload_params)
         return upload_results
 
 
-    def create_report(self, run_output_info, input_configuration, validate_params):
+    def clean(self, run_output_info):
+        ''' Not really necessary on a single run, but if we are running multiple local subjobs, we
+        should clean up files that have already been saved back up to kbase '''
         pass
+
+    def create_report(self, run_output_info, input_configuration, validate_params):
+        report_info = {}
+        report_text = ''
+        kbreport = KBaseReport(self.callback_url)
+
+
+        return {}
 
 
 
@@ -176,6 +190,49 @@ class Bowtie2Aligner(object):
                 raise ValueError('"' + field + '" field required to run bowtie2 aligner app')
 
         return validated_params
+
+
+
+    def fetch_reads_refs_from_sampleset(self, ref, obj_type):
+        """
+        Note: adapted from kbaseapps/kb_hisat2 - file_util.py
+
+        From the given object ref, return a list of all reads objects that are a part of that
+        object. E.g., if ref is a ReadsSet, return a list of all PairedEndLibrary or SingleEndLibrary
+        refs that are a member of that ReadsSet. This is returned as a list of dictionaries as follows:
+        {
+            "ref": reads object reference,
+            "condition": condition string associated with that reads object
+        }
+        The only one required is "ref", all other keys may or may not be present, based on the reads
+        object or object type in initial ref variable. E.g. a RNASeqSampleSet might have condition info
+        for each reads object, but a single PairedEndLibrary may not have that info.
+        If ref is already a Reads library, just returns a list with ref as a single element.
+        """
+        refs = list()
+        if "KBaseSets.ReadsSet" in obj_type:
+            print("Looking up reads references in ReadsSet object")
+            set_client = SetAPI(self.srv_wiz_url)
+            reads_set = set_client.get_reads_set_v1({'ref': ref,
+                                                     'include_item_info': 0
+                                                     })
+            for reads in reads_set["data"]["items"]:
+                refs.append({'ref': reads['ref'],
+                             'condition': reads['label']
+                             })
+        elif "KBaseRNASeq.RNASeqSampleSet" in obj_type:
+            print("Looking up reads references in RNASeqSampleSet object")
+            sample_set = self.ws.get_objects2({"objects": [{"ref": ref}]})["data"][0]["data"]
+            for i in range(len(sample_set["sample_ids"])):
+                refs.append({'ref': sample_set["sample_ids"][i],
+                             'condition': sample_set["condition"][i]
+                             })
+        else:
+            raise ValueError("Unable to fetch reads reference from object {} "
+                             "which is a {}".format(ref, obj_type))
+
+        return refs
+
 
 
     def determine_input_info(self, validated_params):
