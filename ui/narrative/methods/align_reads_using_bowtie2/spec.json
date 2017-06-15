@@ -9,7 +9,7 @@
     "output" : "kbaseRNASeqPieNew"
   },
    "parameters" : [ {
-    "id" : "sampleset_id",
+    "id" : "input_ref",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -19,14 +19,14 @@
       "valid_ws_types" : ["KBaseSets.ReadsSet", "KBaseRNASeq.RNASeqSampleSet" , "KBaseAssembly.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseFile.PairedEndLibrary"]
     }
   }, {
-    "id" : "bowtie_index",
+    "id" : "assembly_or_genome_ref",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
+      "valid_ws_types" : ["KBaseGenomes.Genome", "KBaseGenomeAnnotations.Assembly", "KBaseGenomes.ContigSet" ]
     }
   }, {
     "id" : "quality_score",
@@ -192,24 +192,20 @@
   "behavior" : {
     "service-mapping" : {
       "url" : "",
-      "name" : "KBaseRNASeq",
-      "method" : "Bowtie2Call",
+      "name" : "kb_Bowtie2",
+      "method" : "align_reads_to_assembly_app",
       "input_mapping" : [
         {
           "narrative_system_variable": "workspace",
-          "target_property" : "ws_id"
+          "target_property" : "output_workspace"
         },
         {
-          "input_parameter" : "sampleset_id",
-          "target_property" : "sampleset_id"
-        },
-	{
-          "constant_value"  : 2,
-          "target_property" : "num_threads"
+          "input_parameter" : "input_ref",
+          "target_property" : "input_ref"
         },
         {
-          "input_parameter" : "bowtie_index",
-          "target_property" : "bowtie_index"
+          "input_parameter" : "assembly_or_genome_ref",
+          "target_property" : "assembly_or_genome_ref"
         },
         {
           "input_parameter" : "quality_score",
@@ -248,7 +244,7 @@
           "target_property" : "orientation"
       }],
       "output_mapping" : [
-	{
+      {
          "service_method_output_path": [0,"output"],
          "target_property": "output"
         },

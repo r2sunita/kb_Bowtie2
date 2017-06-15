@@ -45,6 +45,16 @@ module kb_Bowtie2 {
         string very-sensitive-local;
         string fast-local;
         string fast-sensitive;
+
+        string quality_score;
+        string alignment_type;
+        int trim5;
+        int trim3;
+        int np;
+        string preset_options;
+        int minins;
+        int maxins;
+        string orientation; 
     } AlignReadsParams;
 
 

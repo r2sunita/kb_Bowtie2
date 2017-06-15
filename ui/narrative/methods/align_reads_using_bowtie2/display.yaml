@@ -24,16 +24,16 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    sampleset_id :
+    input_ref :
         ui-name : |
-            RNA-seq Sample or Sample Set 
+            RNA-seq SampleSet or Read Library
         short-hint : |
             Select the RNA-seq SampleSet or ReadsSet. If you have only one sample of RNA-seq reads, select the corresponding library object.
-    bowtie_index :
+    assembly_or_genome_ref :
         ui-name : |
-            Indexed Genome
+            Assembly or Genome
         short-hint : |
-            Select the indexed genome built using Bowtie2
+            Select the assembly or genome on which to align to
     alignment_type :
         ui-name : |
             Alignment Type
