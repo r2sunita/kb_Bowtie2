@@ -144,6 +144,31 @@ class Bowtie2Aligner(object):
         run_output_info['output_sam_file'] = output_sam_file
         run_output_info['output_dir'] = output_dir
 
+        # parse all the other parameters
+        if 'quality_score' in validated_params:
+            options.append('--' + str(validated_params['quality_score']))
+
+        if 'alignment_type' in validated_params:
+            options.append('--' + str(validated_params['alignment_type']))
+
+        if 'preset_options' in validated_params:
+            if 'alignment_type' in validated_params and validated_params['alignment_type'] == 'local':
+                options.append('--' + str(validated_params['preset_options'] + '-local'))
+            else:
+                options.append('--' + str(validated_params['preset_options']))
+
+        if 'trim5' in validated_params:
+            options.extend(['--trim5', + str(validated_params['trim5'])])
+        if 'trim3' in validated_params:
+            options.extend(['--trim3', + str(validated_params['trim3'])])
+        if 'np' in validated_params:
+            options.extend(['--np', + str(validated_params['np'])])
+
+        if 'minins' in validated_params:
+            options.extend(['--minins', + str(validated_params['minins'])])
+        if 'maxins' in validated_params:
+            options.extend(['--maxins', + str(validated_params['maxins'])])
+
         # unfortunately, bowtie2 expects the index files to be in the current directory, and
         # you cannot configure it otherwise.  So run bowtie out of the index directory, but
         # place the output SAM file somewhere else
@@ -188,6 +213,13 @@ class Bowtie2Aligner(object):
                 validated_params[field] = params[field]
             else:
                 raise ValueError('"' + field + '" field required to run bowtie2 aligner app')
+
+        optional_fields = ['quality_score', 'alignment_type', 'preset_options', 'trim5', 'trim3',
+                           'np', 'minins', 'maxins']
+        for field in optional_fields:
+            if field in params:
+                if params['field'] is not None:
+                    validated_params = params['field']
 
         return validated_params
 
