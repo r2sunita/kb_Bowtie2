@@ -158,16 +158,16 @@ class Bowtie2Aligner(object):
                 options.append('--' + str(validated_params['preset_options']))
 
         if 'trim5' in validated_params:
-            options.extend(['--trim5', + str(validated_params['trim5'])])
+            options.extend(['--trim5', str(validated_params['trim5'])])
         if 'trim3' in validated_params:
-            options.extend(['--trim3', + str(validated_params['trim3'])])
+            options.extend(['--trim3', str(validated_params['trim3'])])
         if 'np' in validated_params:
-            options.extend(['--np', + str(validated_params['np'])])
+            options.extend(['--np', str(validated_params['np'])])
 
         if 'minins' in validated_params:
-            options.extend(['--minins', + str(validated_params['minins'])])
+            options.extend(['--minins', str(validated_params['minins'])])
         if 'maxins' in validated_params:
-            options.extend(['--maxins', + str(validated_params['maxins'])])
+            options.extend(['--maxins', str(validated_params['maxins'])])
 
         # unfortunately, bowtie2 expects the index files to be in the current directory, and
         # you cannot configure it otherwise.  So run bowtie out of the index directory, but
