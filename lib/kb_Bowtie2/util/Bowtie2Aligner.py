@@ -183,7 +183,7 @@ class Bowtie2Aligner(object):
         upload_params = {'file_path': run_output_info['output_sam_file'],
                          'destination_ref': destination_ref,
                          'read_library_ref': input_configuration['reads_lib_ref'],
-                         'assembly_or_genome_ref': validated_params['input_ref'],
+                         'assembly_or_genome_ref': validated_params['assembly_or_genome_ref'],
                          'condition': 'unknown'}
         upload_results = rau.upload_alignment(upload_params)
         return upload_results
