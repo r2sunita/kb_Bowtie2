@@ -266,6 +266,8 @@ class Bowtie2Aligner(object):
 
     def determine_input_info(self, validated_params):
         ''' get info on the input_ref object and determine if we run once or run on a set '''
+        pprint('Validated params=')
+        pprint(validated_params)
         info = self.get_obj_info(validated_params['input_ref'])
         obj_type = info[2].split('-')[0]
         if obj_type in ['KBaseAssembly.PairedEndLibrary', 'KBaseAssembly.SingleEndLibrary',
