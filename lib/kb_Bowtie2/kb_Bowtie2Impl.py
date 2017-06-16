@@ -72,6 +72,7 @@ class kb_Bowtie2:
         # return variables are: result
         #BEGIN align_reads_to_assembly_app
         print('Running align_reads_to_assembly_app() with params=')
+        pprint(params)
         bowtie2_aligner = Bowtie2Aligner(self.scratch_dir, self.workspace_url,
                                          self.callback_url, self.srv_wiz_url,
                                          ctx.provenance())
