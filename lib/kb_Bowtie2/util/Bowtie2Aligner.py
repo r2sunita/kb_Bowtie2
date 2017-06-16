@@ -199,9 +199,7 @@ class Bowtie2Aligner(object):
         report_text = ''
         kbreport = KBaseReport(self.callback_url)
 
-
         return {}
-
 
 
     def validate_params(self, params):
@@ -218,11 +216,10 @@ class Bowtie2Aligner(object):
                            'np', 'minins', 'maxins']
         for field in optional_fields:
             if field in params:
-                if params['field'] is not None:
-                    validated_params = params['field']
+                if params[field] is not None:
+                    validated_params = params[field]
 
         return validated_params
-
 
 
     def fetch_reads_refs_from_sampleset(self, ref, obj_type):
