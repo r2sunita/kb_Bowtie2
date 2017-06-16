@@ -29,6 +29,15 @@
       "valid_ws_types" : ["KBaseGenomes.Genome", "KBaseGenomeAnnotations.Assembly", "KBaseGenomes.ContigSet" ]
     }
   }, {
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+    }
+  }, {
     "id" : "quality_score",
     "optional" : true,
     "advanced" : true,
@@ -206,6 +215,10 @@
         {
           "input_parameter" : "assembly_or_genome_ref",
           "target_property" : "assembly_or_genome_ref"
+        },
+        {
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output_name"
         },
         {
           "input_parameter" : "quality_score",
