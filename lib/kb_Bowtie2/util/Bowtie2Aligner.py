@@ -33,23 +33,25 @@ class Bowtie2Aligner(object):
         # run as a single_library or as a set:
         #     input_info = {'run_mode': '', 'info': [..], 'ref': '55/1/2'}
 
+        assembly_or_genome_ref = validated_params['assembly_or_genome_ref']
+
         if input_info['run_mode'] == 'single_library':
-            assembly_or_genome_ref = validated_params['assembly_or_genome_ref']
             single_lib_result = self.single_reads_lib_run(input_info, assembly_or_genome_ref,
                                                           validated_params, create_report=True)
             return single_lib_result['report_info']
 
 
         if input_info['run_mode'] == 'sample_set':
-
-            raise('sample set runs not yet supported')
-
-            reads_refs = self.fetch_reads_refs_from_sampleset(input_info['ref'])
+            reads_refs = self.fetch_reads_refs_from_sampleset(input_info['ref'], input_info['info'])
+            bowtie2_index_info = self.build_bowtie2_index(assembly_or_genome_ref, validated_params['output_workspace'])
             single_lib_result_list = {}
+            print('Running on set of reads=')
+            pprint(reads_refs)
             for readlib in reads_refs:
                 reads_info = self.get_obj_info(readlib['ref'])
-                input_info = {'info': reads_info, 'ref': readlib['ref'], 'condition': readlib['condition']}
-                single_lib_result = self.single_reads_lib_run(input_info, assembly_or_genome_ref,
+                single_input_info = {'info': reads_info, 'ref': readlib['ref'], 'condition': readlib['condition'],
+                                     'bowtie2_index_info': bowtie2_index_info}
+                single_lib_result = self.single_reads_lib_run(single_input_info, assembly_or_genome_ref,
                                                               validated_params, create_report=False)
                 single_lib_result_list[readlib['ref']] = single_lib_result
 
@@ -85,6 +87,15 @@ class Bowtie2Aligner(object):
         return {'output_info': run_output_info, 'report_info': report_info}
 
 
+    def build_bowtie2_index(self, assembly_or_genome_ref, ws_for_cache):
+        bowtie2IndexBuilder = Bowtie2IndexBuilder(self.scratch_dir, self.workspace_url,
+                                                  self.callback_url, self.srv_wiz_url,
+                                                  self.provenance)
+
+        return bowtie2IndexBuilder.get_index({'ref': assembly_or_genome_ref,
+                                              'ws_for_cache': ws_for_cache})
+
+
     def prepare_single_run(self, input_info, assembly_or_genome_ref,
                            bowtie2_index_info, ws_for_cache):
         ''' Given a reads ref and an assembly, setup the bowtie2 index '''
@@ -108,7 +119,7 @@ class Bowtie2Aligner(object):
         ru = ReadsUtils(self.callback_url)
         reads = ru.download_reads(reads_params)['files']
 
-        input_configuration['reads_lib_type'] = read_lib_info[2].split('-')[0].split('.')[1]
+        input_configuration['reads_lib_type'] = self.get_type_from_obj_info(read_lib_info).split('.')[1]
         input_configuration['reads_files'] = reads[read_lib_ref]
         input_configuration['reads_lib_ref'] = read_lib_ref
 
@@ -201,6 +212,9 @@ class Bowtie2Aligner(object):
 
         return {}
 
+    def process_batch_result(self):
+        pass
+
 
     def validate_params(self, params):
         validated_params = {}
@@ -222,7 +236,7 @@ class Bowtie2Aligner(object):
         return validated_params
 
 
-    def fetch_reads_refs_from_sampleset(self, ref, obj_type):
+    def fetch_reads_refs_from_sampleset(self, ref, info):
         """
         Note: adapted from kbaseapps/kb_hisat2 - file_util.py
 
@@ -238,6 +252,7 @@ class Bowtie2Aligner(object):
         for each reads object, but a single PairedEndLibrary may not have that info.
         If ref is already a Reads library, just returns a list with ref as a single element.
         """
+        obj_type = self.get_type_from_obj_info(info)
         refs = list()
         if "KBaseSets.ReadsSet" in obj_type:
             print("Looking up reads references in ReadsSet object")
@@ -267,15 +282,20 @@ class Bowtie2Aligner(object):
     def determine_input_info(self, validated_params):
         ''' get info on the input_ref object and determine if we run once or run on a set '''
         info = self.get_obj_info(validated_params['input_ref'])
-        obj_type = info[2].split('-')[0]
+        obj_type = self.get_type_from_obj_info(info)
         if obj_type in ['KBaseAssembly.PairedEndLibrary', 'KBaseAssembly.SingleEndLibrary',
                         'KBaseFile.PairedEndLibrary', 'KBaseFile.SingleEndLibrary']:
             return {'run_mode': 'single_library', 'info': info, 'ref': validated_params['input_ref']}
-        if obj_type == 'KBaseRNASeq.SampleSet':
+        if obj_type == 'KBaseRNASeq.RNASeqSampleSet':
+            return {'run_mode': 'sample_set', 'info': info, 'ref': validated_params['input_ref']}
+        if obj_type == 'KBaseSets.ReadsSet':
             return {'run_mode': 'sample_set', 'info': info, 'ref': validated_params['input_ref']}
 
         raise ValueError('Object type of input_ref is not valid, was: ' + str(obj_type))
 
+
+    def get_type_from_obj_info(self, info):
+        return info[2].split('-')[0]
 
     def get_obj_info(self, ref):
         return self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0]
