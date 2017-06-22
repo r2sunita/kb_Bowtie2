@@ -23,9 +23,9 @@ class kb_Bowtie2:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.1"
+    VERSION = "0.1.0"
     GIT_URL = "git@github.com:kbaseapps/kb_Bowtie2.git"
-    GIT_COMMIT_HASH = "7b82cee381010d8b59eb65f06515cd7ecd30b598"
+    GIT_COMMIT_HASH = "7b0f3ae69c191f47b5d27de799fbfce8d76e0ad6"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
