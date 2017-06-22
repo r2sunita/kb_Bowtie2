@@ -55,11 +55,15 @@ module kb_Bowtie2 {
         int minins;
         int maxins;
         string orientation; 
+
+        int concurrent_njsw_tasks;
+        int concurrent_local_tasks;
     } AlignReadsParams;
 
 
     typedef structure {
         string reads_alignment_ref;
+        string read_alignment_set_ref;
 
         string report_name;
         string report_ref;

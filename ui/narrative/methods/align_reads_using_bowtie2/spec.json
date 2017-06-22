@@ -199,6 +199,30 @@
         }
       ]
     }
+  }, {
+    "id" : "concurrent_local_tasks",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int",
+     "min_int": 0,
+     "min_int": 2
+    }
+  }, {
+    "id" : "concurrent_njsw_tasks",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int",
+     "min_int": 0,
+     "min_int": 10
+    }
   } ],
   "behavior" : {
     "service-mapping" : {
@@ -259,15 +283,32 @@
         {
           "input_parameter" : "orientation",
           "target_property" : "orientation"
-      }],
-      "output_mapping" : [
-      {
-         "service_method_output_path": [0,"output"],
-         "target_property": "output"
         },
+        {
+          "input_parameter" : "concurrent_local_tasks",
+          "target_property" : "concurrent_local_tasks"
+        },
+        {
+          "input_parameter" : "concurrent_njsw_tasks",
+          "target_property" : "concurrent_njsw_tasks"
+        }
+      ],
+      "output_mapping" : [
         {
           "narrative_system_variable": "workspace",
           "target_property" : "workspace"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace_name"
+        },
+        {
+          "service_method_output_path": [0, "report_info", "report_name"],
+          "target_property": "report_name"
+        },
+        {
+          "service_method_output_path": [0, "report_info", "report_ref"],
+          "target_property": "report_ref"
         }
      ]
     }

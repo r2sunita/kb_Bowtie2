@@ -46,7 +46,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "very-fast-local",
     "very-sensitive-local",
     "fast-local",
-    "fast-sensitive"
+    "fast-sensitive",
+    "quality_score",
+    "alignment_type",
+    "trim5",
+    "trim3",
+    "np",
+    "preset_options",
+    "minins",
+    "maxins",
+    "orientation",
+    "concurrent_njsw_tasks",
+    "concurrent_local_tasks"
 })
 public class AlignReadsParams {
 
@@ -80,6 +91,28 @@ public class AlignReadsParams {
     private String fastLocal;
     @JsonProperty("fast-sensitive")
     private String fastSensitive;
+    @JsonProperty("quality_score")
+    private String qualityScore;
+    @JsonProperty("alignment_type")
+    private String alignmentType;
+    @JsonProperty("trim5")
+    private Long trim5;
+    @JsonProperty("trim3")
+    private Long trim3;
+    @JsonProperty("np")
+    private Long np;
+    @JsonProperty("preset_options")
+    private String presetOptions;
+    @JsonProperty("minins")
+    private Long minins;
+    @JsonProperty("maxins")
+    private Long maxins;
+    @JsonProperty("orientation")
+    private String orientation;
+    @JsonProperty("concurrent_njsw_tasks")
+    private Long concurrentNjswTasks;
+    @JsonProperty("concurrent_local_tasks")
+    private Long concurrentLocalTasks;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("input_ref")
@@ -307,6 +340,171 @@ public class AlignReadsParams {
         return this;
     }
 
+    @JsonProperty("quality_score")
+    public String getQualityScore() {
+        return qualityScore;
+    }
+
+    @JsonProperty("quality_score")
+    public void setQualityScore(String qualityScore) {
+        this.qualityScore = qualityScore;
+    }
+
+    public AlignReadsParams withQualityScore(String qualityScore) {
+        this.qualityScore = qualityScore;
+        return this;
+    }
+
+    @JsonProperty("alignment_type")
+    public String getAlignmentType() {
+        return alignmentType;
+    }
+
+    @JsonProperty("alignment_type")
+    public void setAlignmentType(String alignmentType) {
+        this.alignmentType = alignmentType;
+    }
+
+    public AlignReadsParams withAlignmentType(String alignmentType) {
+        this.alignmentType = alignmentType;
+        return this;
+    }
+
+    @JsonProperty("trim5")
+    public Long getTrim5() {
+        return trim5;
+    }
+
+    @JsonProperty("trim5")
+    public void setTrim5(Long trim5) {
+        this.trim5 = trim5;
+    }
+
+    public AlignReadsParams withTrim5(Long trim5) {
+        this.trim5 = trim5;
+        return this;
+    }
+
+    @JsonProperty("trim3")
+    public Long getTrim3() {
+        return trim3;
+    }
+
+    @JsonProperty("trim3")
+    public void setTrim3(Long trim3) {
+        this.trim3 = trim3;
+    }
+
+    public AlignReadsParams withTrim3(Long trim3) {
+        this.trim3 = trim3;
+        return this;
+    }
+
+    @JsonProperty("np")
+    public Long getNp() {
+        return np;
+    }
+
+    @JsonProperty("np")
+    public void setNp(Long np) {
+        this.np = np;
+    }
+
+    public AlignReadsParams withNp(Long np) {
+        this.np = np;
+        return this;
+    }
+
+    @JsonProperty("preset_options")
+    public String getPresetOptions() {
+        return presetOptions;
+    }
+
+    @JsonProperty("preset_options")
+    public void setPresetOptions(String presetOptions) {
+        this.presetOptions = presetOptions;
+    }
+
+    public AlignReadsParams withPresetOptions(String presetOptions) {
+        this.presetOptions = presetOptions;
+        return this;
+    }
+
+    @JsonProperty("minins")
+    public Long getMinins() {
+        return minins;
+    }
+
+    @JsonProperty("minins")
+    public void setMinins(Long minins) {
+        this.minins = minins;
+    }
+
+    public AlignReadsParams withMinins(Long minins) {
+        this.minins = minins;
+        return this;
+    }
+
+    @JsonProperty("maxins")
+    public Long getMaxins() {
+        return maxins;
+    }
+
+    @JsonProperty("maxins")
+    public void setMaxins(Long maxins) {
+        this.maxins = maxins;
+    }
+
+    public AlignReadsParams withMaxins(Long maxins) {
+        this.maxins = maxins;
+        return this;
+    }
+
+    @JsonProperty("orientation")
+    public String getOrientation() {
+        return orientation;
+    }
+
+    @JsonProperty("orientation")
+    public void setOrientation(String orientation) {
+        this.orientation = orientation;
+    }
+
+    public AlignReadsParams withOrientation(String orientation) {
+        this.orientation = orientation;
+        return this;
+    }
+
+    @JsonProperty("concurrent_njsw_tasks")
+    public Long getConcurrentNjswTasks() {
+        return concurrentNjswTasks;
+    }
+
+    @JsonProperty("concurrent_njsw_tasks")
+    public void setConcurrentNjswTasks(Long concurrentNjswTasks) {
+        this.concurrentNjswTasks = concurrentNjswTasks;
+    }
+
+    public AlignReadsParams withConcurrentNjswTasks(Long concurrentNjswTasks) {
+        this.concurrentNjswTasks = concurrentNjswTasks;
+        return this;
+    }
+
+    @JsonProperty("concurrent_local_tasks")
+    public Long getConcurrentLocalTasks() {
+        return concurrentLocalTasks;
+    }
+
+    @JsonProperty("concurrent_local_tasks")
+    public void setConcurrentLocalTasks(Long concurrentLocalTasks) {
+        this.concurrentLocalTasks = concurrentLocalTasks;
+    }
+
+    public AlignReadsParams withConcurrentLocalTasks(Long concurrentLocalTasks) {
+        this.concurrentLocalTasks = concurrentLocalTasks;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -319,7 +517,7 @@ public class AlignReadsParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((("AlignReadsParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputName=")+ outputName)+", outputWorkspace=")+ outputWorkspace)+", phred33=")+ phred33)+", phred64=")+ phred64)+", local=")+ local)+", veryFast=")+ veryFast)+", fast=")+ fast)+", verySensitive=")+ verySensitive)+", sensitive=")+ sensitive)+", veryFastLocal=")+ veryFastLocal)+", verySensitiveLocal=")+ verySensitiveLocal)+", fastLocal=")+ fastLocal)+", fastSensitive=")+ fastSensitive)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((("AlignReadsParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputName=")+ outputName)+", outputWorkspace=")+ outputWorkspace)+", phred33=")+ phred33)+", phred64=")+ phred64)+", local=")+ local)+", veryFast=")+ veryFast)+", fast=")+ fast)+", verySensitive=")+ verySensitive)+", sensitive=")+ sensitive)+", veryFastLocal=")+ veryFastLocal)+", verySensitiveLocal=")+ verySensitiveLocal)+", fastLocal=")+ fastLocal)+", fastSensitive=")+ fastSensitive)+", qualityScore=")+ qualityScore)+", alignmentType=")+ alignmentType)+", trim5=")+ trim5)+", trim3=")+ trim3)+", np=")+ np)+", presetOptions=")+ presetOptions)+", minins=")+ minins)+", maxins=")+ maxins)+", orientation=")+ orientation)+", concurrentNjswTasks=")+ concurrentNjswTasks)+", concurrentLocalTasks=")+ concurrentLocalTasks)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

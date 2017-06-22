@@ -2,6 +2,7 @@ from pprint import pprint
 
 import os
 import time
+import uuid
 
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
@@ -44,32 +45,30 @@ class Bowtie2Aligner(object):
                                                           assembly_or_genome_ref,
                                                           validated_params,
                                                           create_report=validated_params['create_report'])
-            return {} #single_lib_result['report_info']
+
+            return single_lib_result
 
 
         if input_info['run_mode'] == 'sample_set':
             reads_refs = self.fetch_reads_refs_from_sampleset(input_info['ref'], input_info['info'])
             self.build_bowtie2_index(assembly_or_genome_ref, validated_params['output_workspace'])
 
-            single_lib_result_list = {}
             print('Running on set of reads=')
             pprint(reads_refs)
 
             tasks = []
-
             for k in range(0, len(reads_refs)):
                 tasks.append(self.build_single_execution_task(k, reads_refs[k]['ref'], params))
 
             batch_run_params = {'tasks': tasks,
                                 'runner': 'parallel',
-                                'concurrent_local_tasks': 0,
-                                'concurrent_njsw_tasks': 2,
+                                'concurrent_local_tasks': validated_params['concurrent_local_tasks'],
+                                'concurrent_njsw_tasks': validated_params['concurrent_njsw_tasks'],
                                 'max_retries': 2}
             results = self.parallel_runner.run_batch(batch_run_params)
             pprint(results)
-
-            batch_result = self.process_batch_result(single_lib_result_list)
-            return {} #batch_result['report_info']
+            batch_result = self.process_batch_result(results, validated_params)
+            return batch_result
 
         raise ('Improper run mode')
 
@@ -105,7 +104,7 @@ class Bowtie2Aligner(object):
 
         report_info = None
         if create_report:
-            report_info = self.create_report(run_output_info, input_configuration, validated_params)
+            report_info = self.create_report_for_single_run(run_output_info, input_configuration, validated_params)
 
         self.clean(run_output_info)
 
@@ -230,15 +229,65 @@ class Bowtie2Aligner(object):
         should clean up files that have already been saved back up to kbase '''
         pass
 
-    def create_report(self, run_output_info, input_configuration, validate_params):
-        report_info = {}
-        report_text = ''
-        kbreport = KBaseReport(self.callback_url)
+    def create_report_for_single_run(self, run_output_info, input_configuration, validated_params):
+        pprint(run_output_info)
+        pprint(input_configuration)
+        report_text = 'Created ReadsAlignment: ' + run_output_info['upload_results']['obj_ref']
+        kbr = KBaseReport(self.callback_url)
+        report_info = kbr.create_extended_report({'message': report_text,
+                                                  'objects_created': [{'ref': run_output_info['upload_results']['obj_ref'],
+                                                                       'description': 'ReadsAlignment'}],
+                                                  'direct_html_link_index': 0,
+                                                  'html_links': [],
+                                                  'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
+                                                  'workspace_name': validated_params['output_workspace']
+                                                  })
+        return {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-        return {}
+    def process_batch_result(self, batch_result, validated_params):
 
-    def process_batch_result(self):
-        return {}
+        n_jobs = len(batch_result['results'])
+        n_success = 0
+        n_error = 0
+        ran_locally = 0
+        ran_njsw = 0
+
+        for job in batch_result['results']:
+            if job['is_error']:
+                n_error += 1
+            else:
+                n_success += 1
+            if job['result_package']['run_context']['location'] == 'local':
+                ran_locally += 1
+            if job['result_package']['run_context']['location'] == 'njsw':
+                ran_njsw += 1
+
+        # Save the alignment set
+
+        # create the report
+        report_text = 'Ran on SampleSet or ReadsSet.\n\n'
+        report_text += 'Total ReadsLibraries = ' + str(n_jobs) + '\n'
+        report_text += '        Successful runs = ' + str(n_success) + '\n'
+        report_text += '            Failed runs = ' + str(n_success) + '\n'
+        report_text += '       Ran on main node = ' + str(ran_locally) + '\n'
+        report_text += '   Ran on remote worker = ' + str(ran_njsw) + '\n'
+
+        print(report_text)
+
+        kbr = KBaseReport(self.callback_url)
+        report_info = kbr.create_extended_report({'message': report_text,
+                                                  'objects_created': [], #[{'ref': run_output_info['upload_results']['obj_ref'],
+                                                                        #'description': 'ReadsAlignment'}],
+                                                  'direct_html_link_index': 0,
+                                                  'html_links': [],
+                                                  'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
+                                                  'workspace_name': validated_params['output_workspace']
+                                                  })
+
+        result = {'report_info': {'report_name': report_info['name'], 'report_ref': report_info['ref']}}
+        result['batch_output_info'] = batch_result
+
+        return result
 
 
     def validate_params(self, params):
@@ -267,6 +316,14 @@ class Bowtie2Aligner(object):
             else:
                 raise ValueError('"create_report" field, if present, should be set to a boolean value: 0 or 1')
 
+
+        validated_params['concurrent_local_tasks'] = 2
+        validated_params['concurrent_njsw_tasks'] = 0
+
+        if 'concurrent_local_tasks' in params and params['concurrent_local_tasks'] is not None:
+            validated_params['concurrent_local_tasks'] = int(params['concurrent_local_tasks'])
+        if 'concurrent_njsw_tasks' in params and params['concurrent_njsw_tasks'] is not None:
+            validated_params['concurrent_njsw_tasks'] = int(params['concurrent_njsw_tasks'])
 
         return validated_params
 

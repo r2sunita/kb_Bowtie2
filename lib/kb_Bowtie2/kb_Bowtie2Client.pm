@@ -137,8 +137,20 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	very-sensitive-local has a value which is a string
 	fast-local has a value which is a string
 	fast-sensitive has a value which is a string
+	quality_score has a value which is a string
+	alignment_type has a value which is a string
+	trim5 has a value which is an int
+	trim3 has a value which is an int
+	np has a value which is an int
+	preset_options has a value which is a string
+	minins has a value which is an int
+	maxins has a value which is an int
+	orientation has a value which is a string
+	concurrent_njsw_tasks has a value which is an int
+	concurrent_local_tasks has a value which is an int
 AlignReadsResult is a reference to a hash where the following keys are defined:
 	reads_alignment_ref has a value which is a string
+	read_alignment_set_ref has a value which is a string
 	report_name has a value which is a string
 	report_ref has a value which is a string
 
@@ -166,8 +178,20 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	very-sensitive-local has a value which is a string
 	fast-local has a value which is a string
 	fast-sensitive has a value which is a string
+	quality_score has a value which is a string
+	alignment_type has a value which is a string
+	trim5 has a value which is an int
+	trim3 has a value which is an int
+	np has a value which is an int
+	preset_options has a value which is a string
+	minins has a value which is an int
+	maxins has a value which is an int
+	orientation has a value which is a string
+	concurrent_njsw_tasks has a value which is an int
+	concurrent_local_tasks has a value which is an int
 AlignReadsResult is a reference to a hash where the following keys are defined:
 	reads_alignment_ref has a value which is a string
+	read_alignment_set_ref has a value which is a string
 	report_name has a value which is a string
 	report_ref has a value which is a string
 
@@ -647,6 +671,17 @@ very-fast-local has a value which is a string
 very-sensitive-local has a value which is a string
 fast-local has a value which is a string
 fast-sensitive has a value which is a string
+quality_score has a value which is a string
+alignment_type has a value which is a string
+trim5 has a value which is an int
+trim3 has a value which is an int
+np has a value which is an int
+preset_options has a value which is a string
+minins has a value which is an int
+maxins has a value which is an int
+orientation has a value which is a string
+concurrent_njsw_tasks has a value which is an int
+concurrent_local_tasks has a value which is an int
 
 </pre>
 
@@ -670,6 +705,17 @@ very-fast-local has a value which is a string
 very-sensitive-local has a value which is a string
 fast-local has a value which is a string
 fast-sensitive has a value which is a string
+quality_score has a value which is a string
+alignment_type has a value which is a string
+trim5 has a value which is an int
+trim3 has a value which is an int
+np has a value which is an int
+preset_options has a value which is a string
+minins has a value which is an int
+maxins has a value which is an int
+orientation has a value which is a string
+concurrent_njsw_tasks has a value which is an int
+concurrent_local_tasks has a value which is an int
 
 
 =end text
@@ -691,6 +737,7 @@ fast-sensitive has a value which is a string
 <pre>
 a reference to a hash where the following keys are defined:
 reads_alignment_ref has a value which is a string
+read_alignment_set_ref has a value which is a string
 report_name has a value which is a string
 report_ref has a value which is a string
 
@@ -702,6 +749,7 @@ report_ref has a value which is a string
 
 a reference to a hash where the following keys are defined:
 reads_alignment_ref has a value which is a string
+read_alignment_set_ref has a value which is a string
 report_name has a value which is a string
 report_ref has a value which is a string
 

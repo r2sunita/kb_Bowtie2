@@ -54,9 +54,16 @@ class kb_Bowtie2(object):
            "fast" of String, parameter "very-sensitive" of String, parameter
            "sensitive" of String, parameter "very-fast-local" of String,
            parameter "very-sensitive-local" of String, parameter "fast-local"
-           of String, parameter "fast-sensitive" of String
+           of String, parameter "fast-sensitive" of String, parameter
+           "quality_score" of String, parameter "alignment_type" of String,
+           parameter "trim5" of Long, parameter "trim3" of Long, parameter
+           "np" of Long, parameter "preset_options" of String, parameter
+           "minins" of Long, parameter "maxins" of Long, parameter
+           "orientation" of String, parameter "concurrent_njsw_tasks" of
+           Long, parameter "concurrent_local_tasks" of Long
         :returns: instance of type "AlignReadsResult" -> structure: parameter
-           "reads_alignment_ref" of String, parameter "report_name" of
+           "reads_alignment_ref" of String, parameter
+           "read_alignment_set_ref" of String, parameter "report_name" of
            String, parameter "report_ref" of String
         """
         return self._client.call_method(

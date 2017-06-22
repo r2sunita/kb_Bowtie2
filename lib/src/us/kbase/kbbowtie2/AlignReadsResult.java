@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "reads_alignment_ref",
+    "read_alignment_set_ref",
     "report_name",
     "report_ref"
 })
@@ -27,6 +28,8 @@ public class AlignReadsResult {
 
     @JsonProperty("reads_alignment_ref")
     private String readsAlignmentRef;
+    @JsonProperty("read_alignment_set_ref")
+    private String readAlignmentSetRef;
     @JsonProperty("report_name")
     private String reportName;
     @JsonProperty("report_ref")
@@ -45,6 +48,21 @@ public class AlignReadsResult {
 
     public AlignReadsResult withReadsAlignmentRef(String readsAlignmentRef) {
         this.readsAlignmentRef = readsAlignmentRef;
+        return this;
+    }
+
+    @JsonProperty("read_alignment_set_ref")
+    public String getReadAlignmentSetRef() {
+        return readAlignmentSetRef;
+    }
+
+    @JsonProperty("read_alignment_set_ref")
+    public void setReadAlignmentSetRef(String readAlignmentSetRef) {
+        this.readAlignmentSetRef = readAlignmentSetRef;
+    }
+
+    public AlignReadsResult withReadAlignmentSetRef(String readAlignmentSetRef) {
+        this.readAlignmentSetRef = readAlignmentSetRef;
         return this;
     }
 
@@ -90,7 +108,7 @@ public class AlignReadsResult {
 
     @Override
     public String toString() {
-        return ((((((((("AlignReadsResult"+" [readsAlignmentRef=")+ readsAlignmentRef)+", reportName=")+ reportName)+", reportRef=")+ reportRef)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((("AlignReadsResult"+" [readsAlignmentRef=")+ readsAlignmentRef)+", readAlignmentSetRef=")+ readAlignmentSetRef)+", reportName=")+ reportName)+", reportRef=")+ reportRef)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
