@@ -40,14 +40,17 @@ class Bowtie2Aligner(object):
         assembly_or_genome_ref = validated_params['assembly_or_genome_ref']
 
         if input_info['run_mode'] == 'single_library':
-            single_lib_result = self.single_reads_lib_run(input_info, assembly_or_genome_ref,
-                                                          validated_params, create_report=True)
-            return single_lib_result['report_info']
+            single_lib_result = self.single_reads_lib_run(input_info,
+                                                          assembly_or_genome_ref,
+                                                          validated_params,
+                                                          create_report=validated_params['create_report'])
+            return {} #single_lib_result['report_info']
 
 
         if input_info['run_mode'] == 'sample_set':
             reads_refs = self.fetch_reads_refs_from_sampleset(input_info['ref'], input_info['info'])
-            bowtie2_index_info = self.build_bowtie2_index(assembly_or_genome_ref, validated_params['output_workspace'])
+            self.build_bowtie2_index(assembly_or_genome_ref, validated_params['output_workspace'])
+
             single_lib_result_list = {}
             print('Running on set of reads=')
             pprint(reads_refs)
@@ -56,22 +59,17 @@ class Bowtie2Aligner(object):
 
             for k in range(0, len(reads_refs)):
                 tasks.append(self.build_single_execution_task(k, reads_refs[k]['ref'], params))
-                # reads_info = self.get_obj_info(readlib['ref'])
-                # single_input_info = {'info': reads_info, 'ref': readlib['ref'], 'condition': readlib['condition'],
-                #                     'bowtie2_index_info': bowtie2_index_info}
-                # single_lib_result = self.single_reads_lib_run(single_input_info, assembly_or_genome_ref,
-                #                                              validated_params, create_report=False)
-                # single_lib_result_list[readlib['ref']] = single_lib_result
 
-
-
-            batch_run_params = {'tasks': tasks, 'runner': 'local_parallel', 'concurrent_local_tasks': 2}
+            batch_run_params = {'tasks': tasks,
+                                'runner': 'parallel',
+                                'concurrent_local_tasks': 0,
+                                'concurrent_njsw_tasks': 2,
+                                'max_retries': 2}
             results = self.parallel_runner.run_batch(batch_run_params)
             pprint(results)
 
-
             batch_result = self.process_batch_result(single_lib_result_list)
-            return batch_result['report_info']
+            return {} #batch_result['report_info']
 
         raise ('Improper run mode')
 
@@ -80,6 +78,7 @@ class Bowtie2Aligner(object):
         task_params = params
         task_params['input_ref'] = reads_lib_ref
         task_params['output_name'] = params['output_name'] + '.' + str(n)
+        task_params['create_report'] = 0
 
         return {'module_name': 'kb_Bowtie2',
                 'function_name': 'align_reads_to_assembly_app',
@@ -239,7 +238,7 @@ class Bowtie2Aligner(object):
         return {}
 
     def process_batch_result(self):
-        pass
+        return {}
 
 
     def validate_params(self, params):
@@ -258,6 +257,16 @@ class Bowtie2Aligner(object):
             if field in params:
                 if params[field] is not None:
                     validated_params[field] = params[field]
+
+        validated_params['create_report'] = True
+        if 'create_report' in params and params['create_report'] is not None:
+            if int(params['create_report']) == 1:
+                validated_params['create_report'] = True
+            elif int(params['create_report']) == 0:
+                validated_params['create_report'] = False
+            else:
+                raise ValueError('"create_report" field, if present, should be set to a boolean value: 0 or 1')
+
 
         return validated_params
 
