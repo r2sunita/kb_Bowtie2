@@ -3,6 +3,7 @@ from pprint import pprint
 import os
 import time
 import uuid
+import copy
 
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
@@ -74,7 +75,8 @@ class Bowtie2Aligner(object):
 
 
     def build_single_execution_task(self, n, reads_lib_ref, params):
-        task_params = params
+        task_params = copy.deepcopy(params)
+
         task_params['input_ref'] = reads_lib_ref
         task_params['output_name'] = params['output_name'] + '.' + str(n)
         task_params['create_report'] = 0
