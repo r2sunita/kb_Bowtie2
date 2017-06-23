@@ -239,8 +239,8 @@ class Bowtie2Aligner(object):
         report_info = kbr.create_extended_report({'message': report_text,
                                                   'objects_created': [{'ref': run_output_info['upload_results']['obj_ref'],
                                                                        'description': 'ReadsAlignment'}],
-                                                  'direct_html_link_index': 0,
-                                                  'html_links': [],
+                                                  #'direct_html_link_index': 0,
+                                                  #'html_links': [],
                                                   'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
                                                   'workspace_name': validated_params['output_workspace']
                                                   })
@@ -270,7 +270,7 @@ class Bowtie2Aligner(object):
         report_text = 'Ran on SampleSet or ReadsSet.\n\n'
         report_text += 'Total ReadsLibraries = ' + str(n_jobs) + '\n'
         report_text += '        Successful runs = ' + str(n_success) + '\n'
-        report_text += '            Failed runs = ' + str(n_success) + '\n'
+        report_text += '            Failed runs = ' + str(n_error) + '\n'
         report_text += '       Ran on main node = ' + str(ran_locally) + '\n'
         report_text += '   Ran on remote worker = ' + str(ran_njsw) + '\n'
 
@@ -280,8 +280,8 @@ class Bowtie2Aligner(object):
         report_info = kbr.create_extended_report({'message': report_text,
                                                   'objects_created': [], #[{'ref': run_output_info['upload_results']['obj_ref'],
                                                                         #'description': 'ReadsAlignment'}],
-                                                  'direct_html_link_index': 0,
-                                                  'html_links': [],
+                                                  #'direct_html_link_index': 0,
+                                                  #'html_links': [],
                                                   'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
                                                   'workspace_name': validated_params['output_workspace']
                                                   })
