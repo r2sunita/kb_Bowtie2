@@ -67,6 +67,7 @@ class Bowtie2Aligner(object):
                                 'concurrent_njsw_tasks': validated_params['concurrent_njsw_tasks'],
                                 'max_retries': 2}
             results = self.parallel_runner.run_batch(batch_run_params)
+            print('Batch run results=')
             pprint(results)
             batch_result = self.process_batch_result(results, validated_params)
             return batch_result
@@ -95,7 +96,6 @@ class Bowtie2Aligner(object):
         # download reads and prepare any bowtie2 index files
         input_configuration = self.prepare_single_run(read_lib_info, assembly_or_genome_ref,
                                                       bowtie2_index_info, validated_params['output_workspace'])
-        pprint(input_configuration)
 
         # run the actual program
         run_output_info = self.run_bowtie2_align_cli(input_configuration, validated_params)
@@ -153,9 +153,8 @@ class Bowtie2Aligner(object):
 
 
     def run_bowtie2_align_cli(self, input_configuration, validated_params):
-
-        pprint('======== input_configuration =====')
-        pprint(input_configuration)
+        # pprint('======== input_configuration =====')
+        # pprint(input_configuration)
         options = []
         run_output_info = {}
 
@@ -232,15 +231,14 @@ class Bowtie2Aligner(object):
         pass
 
     def create_report_for_single_run(self, run_output_info, input_configuration, validated_params):
-        pprint(run_output_info)
-        pprint(input_configuration)
-        report_text = 'Created ReadsAlignment: ' + run_output_info['upload_results']['obj_ref']
+        report_text = 'Ran on a single reads library.\n\n'
+        alignment_info = self.get_obj_info(run_output_info['upload_results']['obj_ref'])
+        report_text = 'Created ReadsAlignment: ' + str(alignment_info[1]) + '\n'
+        report_text = '                        ' + run_output_info['upload_results']['obj_ref'] + '\n'
         kbr = KBaseReport(self.callback_url)
         report_info = kbr.create_extended_report({'message': report_text,
                                                   'objects_created': [{'ref': run_output_info['upload_results']['obj_ref'],
                                                                        'description': 'ReadsAlignment'}],
-                                                  #'direct_html_link_index': 0,
-                                                  #'html_links': [],
                                                   'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
                                                   'workspace_name': validated_params['output_workspace']
                                                   })
@@ -254,34 +252,57 @@ class Bowtie2Aligner(object):
         ran_locally = 0
         ran_njsw = 0
 
+        # reads alignment set items
+        items = []
+        objects_created = []
+
         for job in batch_result['results']:
+            result_package = job['result_package']
             if job['is_error']:
                 n_error += 1
             else:
                 n_success += 1
-            if job['result_package']['run_context']['location'] == 'local':
+                output_info = result_package['result'][0]['output_info']
+                ra_ref = output_info['upload_results']['obj_ref']
+                # Note: could add a label to the alignment here?
+                items.append({'ref': ra_ref})
+                objects_created.append({'ref': ra_ref})
+
+            if result_package['run_context']['location'] == 'local':
                 ran_locally += 1
-            if job['result_package']['run_context']['location'] == 'njsw':
+            if result_package['run_context']['location'] == 'njsw':
                 ran_njsw += 1
 
         # Save the alignment set
+        alignment_set_data = {'description': '', 'items': items}
+        alignment_set_save_params = {'data': alignment_set_data,
+                                     'workspace': validated_params['output_workspace'],
+                                     'output_object_name': validated_params['output_name']}
+
+        set_api = SetAPI(self.srv_wiz_url)
+        save_result = set_api.save_reads_alignment_set_v1(alignment_set_save_params)
+        print('Saved ReadsAlignment=')
+        pprint(save_result)
+        objects_created.append({'ref': save_result['set_ref'], 'description': 'Set of all reads alignments generated'})
+        set_name = save_result['set_info'][1]
 
         # create the report
         report_text = 'Ran on SampleSet or ReadsSet.\n\n'
+        report_text = 'Created ReadsAlignmentSet: ' + str(set_name) + '\n\n'
         report_text += 'Total ReadsLibraries = ' + str(n_jobs) + '\n'
         report_text += '        Successful runs = ' + str(n_success) + '\n'
         report_text += '            Failed runs = ' + str(n_error) + '\n'
         report_text += '       Ran on main node = ' + str(ran_locally) + '\n'
+        report_text += '   Ran on remote worker = ' + str(ran_njsw) + '\n\n'
+
         report_text += '   Ran on remote worker = ' + str(ran_njsw) + '\n'
 
+        print('Report text=')
         print(report_text)
 
         kbr = KBaseReport(self.callback_url)
         report_info = kbr.create_extended_report({'message': report_text,
-                                                  'objects_created': [], #[{'ref': run_output_info['upload_results']['obj_ref'],
-                                                                        #'description': 'ReadsAlignment'}],
-                                                  #'direct_html_link_index': 0,
-                                                  #'html_links': [],
+                                                  'objects_created': objects_created,
                                                   'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
                                                   'workspace_name': validated_params['output_workspace']
                                                   })
@@ -350,10 +371,10 @@ class Bowtie2Aligner(object):
         refs = list()
         if "KBaseSets.ReadsSet" in obj_type:
             print("Looking up reads references in ReadsSet object")
-            set_client = SetAPI(self.srv_wiz_url)
-            reads_set = set_client.get_reads_set_v1({'ref': ref,
-                                                     'include_item_info': 0
-                                                     })
+            set_api = SetAPI(self.srv_wiz_url)
+            reads_set = set_api.get_reads_set_v1({'ref': ref,
+                                                  'include_item_info': 0
+                                                  })
             for reads in reads_set["data"]["items"]:
                 refs.append({'ref': reads['ref'],
                              'condition': reads['label']
