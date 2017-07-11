@@ -200,28 +200,14 @@
       ]
     }
   }, {
-    "id" : "concurrent_local_tasks",
+    "id" : "output_alignment_filename_extension",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "2" ],
+    "default_values" : [ "_alignment" ],
     "field_type" : "text",
-    "text_options" : {
-     "validate_as": "int",
-     "min_int": 0,
-     "max_int": 2
-    }
-  }, {
-    "id" : "concurrent_njsw_tasks",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "0" ],
-    "field_type" : "text",
-    "text_options" : {
-     "validate_as": "int",
-     "min_int": 0,
-     "max_int": 10
+    "text_options" : { 
+      "is_output_name" : true
     }
   } ],
   "behavior" : {
@@ -285,12 +271,8 @@
           "target_property" : "orientation"
         },
         {
-          "input_parameter" : "concurrent_local_tasks",
-          "target_property" : "concurrent_local_tasks"
-        },
-        {
-          "input_parameter" : "concurrent_njsw_tasks",
-          "target_property" : "concurrent_njsw_tasks"
+          "input_parameter" : "output_alignment_filename_extension",
+          "target_property" : "output_alignment_filename_extension"
         }
       ],
       "output_mapping" : [

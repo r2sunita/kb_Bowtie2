@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "assembly_or_genome_ref",
     "output_name",
     "output_workspace",
+    "output_alignment_filename_extension",
     "phred33",
     "phred64",
     "local",
@@ -69,6 +70,8 @@ public class AlignReadsParams {
     private String outputName;
     @JsonProperty("output_workspace")
     private String outputWorkspace;
+    @JsonProperty("output_alignment_filename_extension")
+    private String outputAlignmentFilenameExtension;
     @JsonProperty("phred33")
     private String phred33;
     @JsonProperty("phred64")
@@ -172,6 +175,21 @@ public class AlignReadsParams {
 
     public AlignReadsParams withOutputWorkspace(String outputWorkspace) {
         this.outputWorkspace = outputWorkspace;
+        return this;
+    }
+
+    @JsonProperty("output_alignment_filename_extension")
+    public String getOutputAlignmentFilenameExtension() {
+        return outputAlignmentFilenameExtension;
+    }
+
+    @JsonProperty("output_alignment_filename_extension")
+    public void setOutputAlignmentFilenameExtension(String outputAlignmentFilenameExtension) {
+        this.outputAlignmentFilenameExtension = outputAlignmentFilenameExtension;
+    }
+
+    public AlignReadsParams withOutputAlignmentFilenameExtension(String outputAlignmentFilenameExtension) {
+        this.outputAlignmentFilenameExtension = outputAlignmentFilenameExtension;
         return this;
     }
 
@@ -517,7 +535,7 @@ public class AlignReadsParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((("AlignReadsParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputName=")+ outputName)+", outputWorkspace=")+ outputWorkspace)+", phred33=")+ phred33)+", phred64=")+ phred64)+", local=")+ local)+", veryFast=")+ veryFast)+", fast=")+ fast)+", verySensitive=")+ verySensitive)+", sensitive=")+ sensitive)+", veryFastLocal=")+ veryFastLocal)+", verySensitiveLocal=")+ verySensitiveLocal)+", fastLocal=")+ fastLocal)+", fastSensitive=")+ fastSensitive)+", qualityScore=")+ qualityScore)+", alignmentType=")+ alignmentType)+", trim5=")+ trim5)+", trim3=")+ trim3)+", np=")+ np)+", presetOptions=")+ presetOptions)+", minins=")+ minins)+", maxins=")+ maxins)+", orientation=")+ orientation)+", concurrentNjswTasks=")+ concurrentNjswTasks)+", concurrentLocalTasks=")+ concurrentLocalTasks)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((((("AlignReadsParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputName=")+ outputName)+", outputWorkspace=")+ outputWorkspace)+", outputAlignmentFilenameExtension=")+ outputAlignmentFilenameExtension)+", phred33=")+ phred33)+", phred64=")+ phred64)+", local=")+ local)+", veryFast=")+ veryFast)+", fast=")+ fast)+", verySensitive=")+ verySensitive)+", sensitive=")+ sensitive)+", veryFastLocal=")+ veryFastLocal)+", verySensitiveLocal=")+ verySensitiveLocal)+", fastLocal=")+ fastLocal)+", fastSensitive=")+ fastSensitive)+", qualityScore=")+ qualityScore)+", alignmentType=")+ alignmentType)+", trim5=")+ trim5)+", trim3=")+ trim3)+", np=")+ np)+", presetOptions=")+ presetOptions)+", minins=")+ minins)+", maxins=")+ maxins)+", orientation=")+ orientation)+", concurrentNjswTasks=")+ concurrentNjswTasks)+", concurrentLocalTasks=")+ concurrentLocalTasks)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

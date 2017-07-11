@@ -51,21 +51,23 @@ class Bowtie2Aligner(object):
 
 
         if input_info['run_mode'] == 'sample_set':
-            reads_refs = self.fetch_reads_refs_from_sampleset(input_info['ref'], input_info['info'])
+            reads = self.fetch_reads_refs_from_sampleset(input_info['ref'], input_info['info'], validated_params)
             self.build_bowtie2_index(assembly_or_genome_ref, validated_params['output_workspace'])
 
             print('Running on set of reads=')
-            pprint(reads_refs)
+            pprint(reads)
 
             tasks = []
-            for k in range(0, len(reads_refs)):
-                tasks.append(self.build_single_execution_task(k, reads_refs[k]['ref'], params))
+            for r in reads:
+                tasks.append(self.build_single_execution_task(r['ref'], params, r['alignment_output_name']))
 
             batch_run_params = {'tasks': tasks,
                                 'runner': 'parallel',
-                                'concurrent_local_tasks': validated_params['concurrent_local_tasks'],
-                                'concurrent_njsw_tasks': validated_params['concurrent_njsw_tasks'],
                                 'max_retries': 2}
+            if validated_params['concurrent_local_tasks'] is not None:
+                batch_run_params['concurrent_local_tasks'] = validated_params['concurrent_local_tasks']
+            if validated_params['concurrent_njsw_tasks'] is not None:
+                batch_run_params['concurrent_njsw_tasks'] = validated_params['concurrent_njsw_tasks']
             results = self.parallel_runner.run_batch(batch_run_params)
             print('Batch run results=')
             pprint(results)
@@ -75,11 +77,11 @@ class Bowtie2Aligner(object):
         raise ('Improper run mode')
 
 
-    def build_single_execution_task(self, n, reads_lib_ref, params):
+    def build_single_execution_task(self, reads_lib_ref, params, output_name):
         task_params = copy.deepcopy(params)
 
         task_params['input_ref'] = reads_lib_ref
-        task_params['output_name'] = params['output_name'] + '.' + str(n)
+        task_params['output_name'] = output_name
         task_params['create_report'] = 0
 
         return {'module_name': 'kb_Bowtie2',
@@ -324,7 +326,7 @@ class Bowtie2Aligner(object):
                 raise ValueError('"' + field + '" field required to run bowtie2 aligner app')
 
         optional_fields = ['quality_score', 'alignment_type', 'preset_options', 'trim5', 'trim3',
-                           'np', 'minins', 'maxins']
+                           'np', 'minins', 'maxins', 'output_alignment_filename_extension']
         for field in optional_fields:
             if field in params:
                 if params[field] is not None:
@@ -339,9 +341,8 @@ class Bowtie2Aligner(object):
             else:
                 raise ValueError('"create_report" field, if present, should be set to a boolean value: 0 or 1')
 
-
-        validated_params['concurrent_local_tasks'] = 2
-        validated_params['concurrent_njsw_tasks'] = 0
+        validated_params['concurrent_local_tasks'] = None
+        validated_params['concurrent_njsw_tasks'] = None
 
         if 'concurrent_local_tasks' in params and params['concurrent_local_tasks'] is not None:
             validated_params['concurrent_local_tasks'] = int(params['concurrent_local_tasks'])
@@ -351,7 +352,7 @@ class Bowtie2Aligner(object):
         return validated_params
 
 
-    def fetch_reads_refs_from_sampleset(self, ref, info):
+    def fetch_reads_refs_from_sampleset(self, ref, info, validated_params):
         """
         Note: adapted from kbaseapps/kb_hisat2 - file_util.py
 
@@ -369,6 +370,7 @@ class Bowtie2Aligner(object):
         """
         obj_type = self.get_type_from_obj_info(info)
         refs = list()
+        refs_for_ws_info = list()
         if "KBaseSets.ReadsSet" in obj_type:
             print("Looking up reads references in ReadsSet object")
             set_api = SetAPI(self.srv_wiz_url)
@@ -379,6 +381,7 @@ class Bowtie2Aligner(object):
                 refs.append({'ref': reads['ref'],
                              'condition': reads['label']
                              })
+                refs_for_ws_info.append({'ref': reads['ref']})
         elif "KBaseRNASeq.RNASeqSampleSet" in obj_type:
             print("Looking up reads references in RNASeqSampleSet object")
             sample_set = self.ws.get_objects2({"objects": [{"ref": ref}]})["data"][0]["data"]
@@ -386,9 +389,32 @@ class Bowtie2Aligner(object):
                 refs.append({'ref': sample_set["sample_ids"][i],
                              'condition': sample_set["condition"][i]
                              })
+                refs_for_ws_info.append({'ref': sample_set["sample_ids"][i]})
         else:
             raise ValueError("Unable to fetch reads reference from object {} "
                              "which is a {}".format(ref, obj_type))
+
+        # get object info so we can name things properly
+        infos = self.ws.get_object_info3({'objects': refs_for_ws_info})['infos']
+
+        name_ext = '_alignment'
+        if 'output_alignment_filename_extension' in validated_params \
+                and validated_params['output_alignment_filename_extension'] is not None:
+            ext = validated_params['output_alignment_filename_extension'].replace(' ', '')
+            if ext:
+                name_ext = ext
+
+        unique_name_lookup = {}
+        for k in range(0, len(refs)):
+            refs[k]['info'] = infos[k]
+            name = infos[k][1]
+            if name not in unique_name_lookup:
+                unique_name_lookup[name] = 1
+            else:
+                unique_name_lookup[name] += 1
+                name = name + '_' + str(unique_name_lookup[name])
+            name = name + name_ext
+            refs[k]['alignment_output_name'] = name
 
         return refs
 

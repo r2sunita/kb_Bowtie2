@@ -25,7 +25,7 @@ class kb_Bowtie2:
     ######################################### noqa
     VERSION = "0.1.0"
     GIT_URL = "git@github.com:kbaseapps/kb_Bowtie2.git"
-    GIT_COMMIT_HASH = "7b0f3ae69c191f47b5d27de799fbfce8d76e0ad6"
+    GIT_COMMIT_HASH = "fc2f147ea45b59fa54ab2663b06b40043613ffc5"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -58,6 +58,7 @@ class kb_Bowtie2:
            parameter "input_ref" of String, parameter
            "assembly_or_genome_ref" of String, parameter "output_name" of
            String, parameter "output_workspace" of String, parameter
+           "output_alignment_filename_extension" of String, parameter
            "phred33" of String, parameter "phred64" of String, parameter
            "local" of String, parameter "very-fast" of String, parameter
            "fast" of String, parameter "very-sensitive" of String, parameter

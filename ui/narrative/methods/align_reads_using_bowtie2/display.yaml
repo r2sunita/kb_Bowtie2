@@ -102,13 +102,9 @@ parameters :
             Select the upstream/downstream mate orientations for a valid paired-end alignments against the forward reference strand. 
         long-hint : |
             By default, fr is used.
-
-    concurrent_local_tasks : 
-        ui-name : N Local Tasks
-        short-hint : temporary advanced option
-    concurrent_njsw_tasks : 
-        ui-name : N Local Tasks
-        short-hint : temporary advanced option
+    output_alignment_filename_extension :
+        ui-name : Alignment output filename extensions
+        short-hint : When run on a set, individual alignments will be given names based on the reads object name appended with this extension
             
 description : |
     <p>This App aligns the sequencing reads for a set of two or more samples to long reference sequences of a prokaryotic genome using Bowtie2 and outputs a set of alignments for the given sample set in BAM format. Alternatively, if the user has only a single sample of reads or a set of reads, this App will take single-end or paired-end library object instead of a sample set.</p> 

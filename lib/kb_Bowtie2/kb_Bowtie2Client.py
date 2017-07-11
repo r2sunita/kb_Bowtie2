@@ -49,6 +49,7 @@ class kb_Bowtie2(object):
            parameter "input_ref" of String, parameter
            "assembly_or_genome_ref" of String, parameter "output_name" of
            String, parameter "output_workspace" of String, parameter
+           "output_alignment_filename_extension" of String, parameter
            "phred33" of String, parameter "phred64" of String, parameter
            "local" of String, parameter "very-fast" of String, parameter
            "fast" of String, parameter "very-sensitive" of String, parameter

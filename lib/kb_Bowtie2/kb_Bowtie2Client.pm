@@ -126,6 +126,7 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	assembly_or_genome_ref has a value which is a string
 	output_name has a value which is a string
 	output_workspace has a value which is a string
+	output_alignment_filename_extension has a value which is a string
 	phred33 has a value which is a string
 	phred64 has a value which is a string
 	local has a value which is a string
@@ -167,6 +168,7 @@ AlignReadsParams is a reference to a hash where the following keys are defined:
 	assembly_or_genome_ref has a value which is a string
 	output_name has a value which is a string
 	output_workspace has a value which is a string
+	output_alignment_filename_extension has a value which is a string
 	phred33 has a value which is a string
 	phred64 has a value which is a string
 	local has a value which is a string
@@ -660,6 +662,7 @@ input_ref has a value which is a string
 assembly_or_genome_ref has a value which is a string
 output_name has a value which is a string
 output_workspace has a value which is a string
+output_alignment_filename_extension has a value which is a string
 phred33 has a value which is a string
 phred64 has a value which is a string
 local has a value which is a string
@@ -694,6 +697,7 @@ input_ref has a value which is a string
 assembly_or_genome_ref has a value which is a string
 output_name has a value which is a string
 output_workspace has a value which is a string
+output_alignment_filename_extension has a value which is a string
 phred33 has a value which is a string
 phred64 has a value which is a string
 local has a value which is a string
