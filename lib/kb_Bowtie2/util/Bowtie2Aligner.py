@@ -297,8 +297,6 @@ class Bowtie2Aligner(object):
         report_text += '       Ran on main node = ' + str(ran_locally) + '\n'
         report_text += '   Ran on remote worker = ' + str(ran_njsw) + '\n\n'
 
-        report_text += '   Ran on remote worker = ' + str(ran_njsw) + '\n'
-
         print('Report text=')
         print(report_text)
 
