@@ -115,7 +115,7 @@ class kb_Bowtie2:
            object.  If that object does not exist, then calling this function
            can create a new object.  To create the cache, you must specify
            the ws name or ID in 'ws_for_cache' in which to create the cached
-           index.  If this field is not set, the result will not be cached. 
+           index.  If this field is not set, the result will not be cached.
            This parameter will eventually be deprecated once the big file
            cache service is implemented.) -> structure: parameter "ref" of
            String, parameter "output_dir" of String, parameter "ws_for_cache"

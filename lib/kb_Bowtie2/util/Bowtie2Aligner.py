@@ -10,6 +10,7 @@ from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
 
 from ReadsUtils.ReadsUtilsClient import ReadsUtils
 from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from kb_QualiMap.kb_QualiMapClient import kb_QualiMap
 from KBaseReport.KBaseReportClient import KBaseReport
 
 from Workspace.WorkspaceClient import Workspace
@@ -30,6 +31,7 @@ class Bowtie2Aligner(object):
         self.ws = Workspace(self.workspace_url)
         self.bowtie2 = Bowtie2Runner(self.scratch_dir)
         self.parallel_runner = KBParallel(self.callback_url)
+        self.qualimap = kb_QualiMap(self.callback_url)
 
 
     def align(self, params):
@@ -48,7 +50,6 @@ class Bowtie2Aligner(object):
                                                           create_report=validated_params['create_report'])
 
             return single_lib_result
-
 
         if input_info['run_mode'] == 'sample_set':
             reads = self.fetch_reads_refs_from_sampleset(input_info['ref'], input_info['info'], validated_params)
@@ -233,6 +234,11 @@ class Bowtie2Aligner(object):
         pass
 
     def create_report_for_single_run(self, run_output_info, input_configuration, validated_params):
+        # first run qualimap
+        qualimap_report = self.qualimap.run_bamqc({'input_ref': run_output_info['upload_results']['obj_ref']})
+        qc_result_zip_info = qualimap_report['qc_result_zip_info']
+
+        # create report
         report_text = 'Ran on a single reads library.\n\n'
         alignment_info = self.get_obj_info(run_output_info['upload_results']['obj_ref'])
         report_text = 'Created ReadsAlignment: ' + str(alignment_info[1]) + '\n'
@@ -242,6 +248,10 @@ class Bowtie2Aligner(object):
                                                   'objects_created': [{'ref': run_output_info['upload_results']['obj_ref'],
                                                                        'description': 'ReadsAlignment'}],
                                                   'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
+                                                  'direct_html_link_index': 0,
+                                                  'html_links': [{'shock_id': qc_result_zip_info['shock_id'],
+                                                                  'name': qc_result_zip_info['index_html_file_name'],
+                                                                  'label': qc_result_zip_info['name']}],
                                                   'workspace_name': validated_params['output_workspace']
                                                   })
         return {'report_name': report_info['name'], 'report_ref': report_info['ref']}
@@ -288,6 +298,10 @@ class Bowtie2Aligner(object):
         objects_created.append({'ref': save_result['set_ref'], 'description': 'Set of all reads alignments generated'})
         set_name = save_result['set_info'][1]
 
+        # run qualimap
+        qualimap_report = self.qualimap.run_bamqc({'input_ref': save_result['set_ref']})
+        qc_result_zip_info = qualimap_report['qc_result_zip_info']
+
         # create the report
         report_text = 'Ran on SampleSet or ReadsSet.\n\n'
         report_text = 'Created ReadsAlignmentSet: ' + str(set_name) + '\n\n'
@@ -304,6 +318,10 @@ class Bowtie2Aligner(object):
         report_info = kbr.create_extended_report({'message': report_text,
                                                   'objects_created': objects_created,
                                                   'report_object_name': 'kb_Bowtie2_' + str(uuid.uuid4()),
+                                                  'direct_html_link_index': 0,
+                                                  'html_links': [{'shock_id': qc_result_zip_info['shock_id'],
+                                                                  'name': qc_result_zip_info['index_html_file_name'],
+                                                                  'label': qc_result_zip_info['name']}],
                                                   'workspace_name': validated_params['output_workspace']
                                                   })
 

@@ -15,13 +15,17 @@
   "type" : "sdk",
   "version_tag" : "release"
 }, {
+  "module_name" : "kb_QualiMap",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
   "module_name" : "KBaseReport",
   "type" : "sdk",
   "version_tag" : "release"
 }, {
   "module_name" : "KBParallel",
   "type" : "sdk",
-  "version_tag" : "dev"
+  "version_tag" : "release"
 }, {
   "module_name" : "ReadsAlignmentUtils",
   "type" : "sdk",
@@ -33,7 +37,7 @@
 }, {
   "module_name" : "SetAPI",
   "type" : "sdk",
-  "version_tag" : "dev"
+  "version_tag" : "release"
 }, {
   "module_name" : "Workspace",
   "type" : "core",
