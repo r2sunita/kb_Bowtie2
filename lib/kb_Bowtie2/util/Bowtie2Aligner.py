@@ -72,7 +72,7 @@ class Bowtie2Aligner(object):
             results = self.parallel_runner.run_batch(batch_run_params)
             print('Batch run results=')
             pprint(results)
-            batch_result = self.process_batch_result(results, validated_params)
+            batch_result = self.process_batch_result(results, validated_params, reads)
             return batch_result
 
         raise ('Improper run mode')
@@ -256,7 +256,7 @@ class Bowtie2Aligner(object):
                                                   })
         return {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-    def process_batch_result(self, batch_result, validated_params):
+    def process_batch_result(self, batch_result, validated_params, reads):
 
         n_jobs = len(batch_result['results'])
         n_success = 0
@@ -268,7 +268,8 @@ class Bowtie2Aligner(object):
         items = []
         objects_created = []
 
-        for job in batch_result['results']:
+        for k in range(0, len(batch_result['results'])):
+            job = batch_result['results'][k]
             result_package = job['result_package']
             if job['is_error']:
                 n_error += 1
@@ -277,7 +278,7 @@ class Bowtie2Aligner(object):
                 output_info = result_package['result'][0]['output_info']
                 ra_ref = output_info['upload_results']['obj_ref']
                 # Note: could add a label to the alignment here?
-                items.append({'ref': ra_ref})
+                items.append({'ref': ra_ref, 'label': reads[k]['condition']})
                 objects_created.append({'ref': ra_ref})
 
             if result_package['run_context']['location'] == 'local':
