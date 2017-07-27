@@ -29,14 +29,14 @@
       "valid_ws_types" : ["KBaseGenomes.Genome", "KBaseGenomeAnnotations.Assembly", "KBaseGenomes.ContigSet" ]
     }
   }, {
-    "id" : "output_obj_name",
+    "id" : "output_obj_name_suffix",
     "optional" : false,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "_alignment_set" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignment" ],
+      "valid_ws_types" : [ ],
       "is_output_name" : true
     }
   }, {
@@ -200,7 +200,15 @@
       ]
     }
   }, {
-    "id" : "output_alignment_filename_extension",
+    "id" : "condition_label",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "unknown" ],
+    "field_type" : "text",
+    "text_options" : { }
+  }, {
+    "id" : "output_alignment_suffix",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -231,8 +239,8 @@
           "target_type_transform": "resolved-ref"
         },
         {
-          "input_parameter" : "output_obj_name",
-          "target_property" : "output_name"
+          "input_parameter" : "output_obj_name_suffix",
+          "target_property" : "output_obj_name_suffix"
         },
         {
           "input_parameter" : "quality_score",
@@ -271,8 +279,12 @@
           "target_property" : "orientation"
         },
         {
-          "input_parameter" : "output_alignment_filename_extension",
-          "target_property" : "output_alignment_filename_extension"
+          "input_parameter" : "condition_label",
+          "target_property" : "condition_label"
+        },
+        {
+          "input_parameter" : "output_alignment_suffix",
+          "target_property" : "output_alignment_suffix"
         }
       ],
       "output_mapping" : [
