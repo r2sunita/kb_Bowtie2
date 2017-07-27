@@ -93,7 +93,7 @@ class Bowtie2Aligner(object):
 
         return {'module_name': 'kb_Bowtie2',
                 'function_name': 'align_reads_to_assembly_app',
-                'version': 'dev',
+                # 'version': 'dev',
                 'parameters': task_params}
 
 
