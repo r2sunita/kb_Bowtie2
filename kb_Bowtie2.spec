@@ -33,7 +33,11 @@ module kb_Bowtie2 {
 
         string output_name;
         string output_workspace;
-        string output_alignment_filename_extension;
+
+        string output_obj_name_suffix;
+        string output_alignment_suffix;
+
+        string condition_label;
 
         string phred33;
         string phred64;

@@ -44,6 +44,11 @@ class Bowtie2Aligner(object):
         assembly_or_genome_ref = validated_params['assembly_or_genome_ref']
 
         if input_info['run_mode'] == 'single_library':
+            if 'output_alignment_name' not in validated_params:
+                suffix = '_alignment'
+                if 'output_alignment_suffix' in validated_params:
+                    suffix = validated_params['output_alignment_suffix']
+                validated_params['output_alignment_name'] = input_info['info'][1] + suffix
             single_lib_result = self.single_reads_lib_run(input_info,
                                                           assembly_or_genome_ref,
                                                           validated_params,
@@ -60,7 +65,7 @@ class Bowtie2Aligner(object):
 
             tasks = []
             for r in reads:
-                tasks.append(self.build_single_execution_task(r['ref'], params, r['alignment_output_name']))
+                tasks.append(self.build_single_execution_task(r['ref'], params, r['alignment_output_name'], r['condition']))
 
             batch_run_params = {'tasks': tasks,
                                 'runner': 'parallel',
@@ -72,18 +77,19 @@ class Bowtie2Aligner(object):
             results = self.parallel_runner.run_batch(batch_run_params)
             print('Batch run results=')
             pprint(results)
-            batch_result = self.process_batch_result(results, validated_params, reads)
+            batch_result = self.process_batch_result(results, validated_params, reads, input_info['info'])
             return batch_result
 
         raise ('Improper run mode')
 
 
-    def build_single_execution_task(self, reads_lib_ref, params, output_name):
+    def build_single_execution_task(self, reads_lib_ref, params, output_name, condition):
         task_params = copy.deepcopy(params)
 
         task_params['input_ref'] = reads_lib_ref
-        task_params['output_name'] = output_name
+        task_params['output_alignment_name'] = output_name
         task_params['create_report'] = 0
+        task_params['condition_label'] = condition
 
         return {'module_name': 'kb_Bowtie2',
                 'function_name': 'align_reads_to_assembly_app',
@@ -218,12 +224,15 @@ class Bowtie2Aligner(object):
 
     def save_read_alignment_output(self, run_output_info, input_configuration, validated_params):
         rau = ReadsAlignmentUtils(self.callback_url)
-        destination_ref = validated_params['output_workspace'] + '/' + validated_params['output_name']
+        destination_ref = validated_params['output_workspace'] + '/' + validated_params['output_alignment_name']
+        condition = 'unknown'
+        if 'condition_label' in validated_params:
+            condition = validated_params['condition_label']
         upload_params = {'file_path': run_output_info['output_sam_file'],
                          'destination_ref': destination_ref,
                          'read_library_ref': input_configuration['reads_lib_ref'],
                          'assembly_or_genome_ref': validated_params['assembly_or_genome_ref'],
-                         'condition': 'unknown'}
+                         'condition': condition}
         upload_results = rau.upload_alignment(upload_params)
         return upload_results
 
@@ -256,7 +265,7 @@ class Bowtie2Aligner(object):
                                                   })
         return {'report_name': report_info['name'], 'report_ref': report_info['ref']}
 
-    def process_batch_result(self, batch_result, validated_params, reads):
+    def process_batch_result(self, batch_result, validated_params, reads, input_set_info):
 
         n_jobs = len(batch_result['results'])
         n_success = 0
@@ -290,7 +299,7 @@ class Bowtie2Aligner(object):
         alignment_set_data = {'description': '', 'items': items}
         alignment_set_save_params = {'data': alignment_set_data,
                                      'workspace': validated_params['output_workspace'],
-                                     'output_object_name': validated_params['output_name']}
+                                     'output_object_name': str(input_set_info[1]) + validated_params['output_obj_name_suffix']}
 
         set_api = SetAPI(self.srv_wiz_url)
         save_result = set_api.save_reads_alignment_set_v1(alignment_set_save_params)
@@ -335,15 +344,16 @@ class Bowtie2Aligner(object):
     def validate_params(self, params):
         validated_params = {}
 
-        required_string_fields = ['input_ref', 'assembly_or_genome_ref', 'output_name', 'output_workspace']
+        required_string_fields = ['input_ref', 'assembly_or_genome_ref', 'output_obj_name_suffix',
+                                  'output_workspace']
         for field in required_string_fields:
             if field in params and params[field]:
                 validated_params[field] = params[field]
             else:
                 raise ValueError('"' + field + '" field required to run bowtie2 aligner app')
 
-        optional_fields = ['quality_score', 'alignment_type', 'preset_options', 'trim5', 'trim3',
-                           'np', 'minins', 'maxins', 'output_alignment_filename_extension']
+        optional_fields = ['quality_score', 'alignment_type', 'preset_options', 'trim5', 'trim3', 'condition_label',
+                           'np', 'minins', 'maxins', 'output_alignment_suffix', 'output_alignment_name']
         for field in optional_fields:
             if field in params:
                 if params[field] is not None:
@@ -415,9 +425,9 @@ class Bowtie2Aligner(object):
         infos = self.ws.get_object_info3({'objects': refs_for_ws_info})['infos']
 
         name_ext = '_alignment'
-        if 'output_alignment_filename_extension' in validated_params \
-                and validated_params['output_alignment_filename_extension'] is not None:
-            ext = validated_params['output_alignment_filename_extension'].replace(' ', '')
+        if 'output_alignment_suffix' in validated_params \
+                and validated_params['output_alignment_suffix'] is not None:
+            ext = validated_params['output_alignment_suffix'].replace(' ', '')
             if ext:
                 name_ext = ext
 
