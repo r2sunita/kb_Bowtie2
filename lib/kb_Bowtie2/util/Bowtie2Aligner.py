@@ -4,6 +4,7 @@ import os
 import time
 import uuid
 import copy
+import re
 
 from kb_Bowtie2.util.Bowtie2Runner import Bowtie2Runner
 from kb_Bowtie2.util.Bowtie2IndexBuilder import Bowtie2IndexBuilder
@@ -28,11 +29,34 @@ class Bowtie2Aligner(object):
         self.srv_wiz_url = srv_wiz_url
         self.provenance = provenance
 
+        # from the provenance, extract out the version to run by exact hash if possible
+        self.my_version = 'release'
+        if len(provenance) > 0:
+            if 'subactions' in provenance[0]:
+                self.my_version = self.get_version_from_subactions('kb_Bowtie2', provenance[0]['subactions'])
+        print('Running kb_Bowtie2 version = ' + self.my_version)
+
         self.ws = Workspace(self.workspace_url)
         self.bowtie2 = Bowtie2Runner(self.scratch_dir)
         self.parallel_runner = KBParallel(self.callback_url)
         self.qualimap = kb_QualiMap(self.callback_url)
 
+    def get_version_from_subactions(self, module_name, subactions):
+        # go through each sub action looking for
+        if not subactions:
+            return 'release'  # default to release if we can't find anything
+        for sa in subactions:
+            if 'name' in sa:
+                if sa['name'] == module_name:
+                    # local-docker-image implies that we are running in kb-test, so return 'dev'
+                    if sa['commit'] == 'local-docker-image':
+                        return 'dev'
+                    # to check that it is a valid hash, make sure it is the right
+                    # length and made up of valid hash characters
+                    if re.match('[a-fA-F0-9]{40}$', sa['commit']):
+                        return sa['commit']
+        # again, default to setting this to release
+        return 'release'
 
     def align(self, params):
         validated_params = self.validate_params(params)
@@ -93,7 +117,7 @@ class Bowtie2Aligner(object):
 
         return {'module_name': 'kb_Bowtie2',
                 'function_name': 'align_reads_to_assembly_app',
-                # 'version': 'dev',
+                'version': self.my_version,
                 'parameters': task_params}
 
 
