@@ -17,7 +17,7 @@ method-suggestions :
     related :
         []
     next :
-        [assemble_transcripts_using_cufflinks]
+        [assemble_transcripts_using_cufflinks,assemble_transcripts_with_stringtie]
 
 
 #
@@ -26,9 +26,9 @@ method-suggestions :
 parameters :
     input_ref :
         ui-name : |
-            RNA-seq SampleSet or Read Library
+            RNA-seq Sample or Sample Set
         short-hint : |
-            Select the RNA-seq SampleSet or ReadsSet. If you have only one sample of RNA-seq reads, select the corresponding library object.
+            Select the RNA-seq sample set. If you have only one sample of RNA-seq reads, select the corresponding library object.
     assembly_or_genome_ref :
         ui-name : |
             Assembly or Genome
@@ -106,10 +106,12 @@ parameters :
         ui-name : |
             Condition Label for Single Library Run
         short-hint : |
-            If you run on a single Reads Library, and want to specify a condition label in the alignment, set this paramter
+            If you run on a single Reads Library, and want to specify a condition label in the alignment, set this parameter
     output_alignment_suffix :
-        ui-name : Alignment output name suffix
-        short-hint : Individual alignments will be given names based on the reads object name appended with this extension
+        ui-name : |
+        Alignment output name suffix
+        short-hint : |
+        Individual alignments will be given names based on the reads object name appended with this extension
             
 description : |
     <p>This App aligns the sequencing reads for a set of two or more samples to long reference sequences of a prokaryotic genome using Bowtie2 and outputs a set of alignments for the given sample set in BAM format. Alternatively, if the user has only a single sample of reads or a set of reads, this App will take single-end or paired-end library object instead of a sample set.</p> 
